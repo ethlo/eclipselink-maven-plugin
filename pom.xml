@@ -50,13 +50,6 @@
 		</repository>
   	</distributionManagement>
 	<dependencies>
-		<!-- 
-		<dependency>
-			<groupId>org.codehaus.mojo</groupId>
-			<artifactId>apt-maven-plugin</artifactId>
-			<version>1.0-alpha-5</version>
-		</dependency>
-		-->
       	<dependency>
         	<groupId>net.sf.scannotation</groupId>
         	<artifactId>scannotation</artifactId>
@@ -96,11 +89,6 @@
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>javax.persistence</artifactId>
 			<version>2.0.0</version>
-		</dependency>
-		<dependency>
-			<groupId>org.reflections</groupId>
-			<artifactId>reflections</artifactId>
-			<version>0.9.8</version>
 		</dependency>
 	</dependencies>
 	<repositories>

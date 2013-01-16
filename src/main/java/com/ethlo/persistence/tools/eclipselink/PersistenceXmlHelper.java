@@ -14,22 +14,20 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 /**
@@ -101,7 +99,7 @@ public class PersistenceXmlHelper
 		        throw new UnsupportedOperationException();
 		    }
 
-		    public Iterator getPrefixes(String uri)
+		    public Iterator<String> getPrefixes(String uri)
 		    {
 		        throw new UnsupportedOperationException();
 		    }
@@ -134,23 +132,30 @@ public class PersistenceXmlHelper
 	
 	public static void outputXml(Document doc, File targetFile)
 	{
-		if (!targetFile.exists() && !targetFile.getParentFile().mkdirs())
+		if (! targetFile.exists())
 		{
-			throw new RuntimeException("Could not create directory for target file: " + targetFile);
+			targetFile.getParentFile().mkdirs();
 		}
 		
 		try (final Writer writer = new FileWriter(targetFile))
 		{
-			final TransformerFactory tFactory = TransformerFactory.newInstance();
-		    final Transformer transformer = tFactory.newTransformer();
-		    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-		    final DOMSource source = new DOMSource(doc);
-		    final StreamResult result = new StreamResult(writer);
-		    transformer.transform(source, result);
+			prettyPrint(doc, writer);
 		}
-		catch (TransformerException | IOException e)
+		catch (IOException e)
 		{
 			throw new RuntimeException(e.getMessage(), e);
 		}
+	}
+	
+	public static void prettyPrint(Document document, Writer writer)
+	{
+		final DOMImplementation domImplementation = document.getImplementation();
+		final DOMImplementationLS domImplementationLS = (DOMImplementationLS) domImplementation.getFeature("LS", "3.0");
+		final LSSerializer lsSerializer = domImplementationLS.createLSSerializer();
+		lsSerializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
+		final LSOutput lsOutput = domImplementationLS.createLSOutput();
+		lsOutput.setEncoding("UTF-8");
+		lsOutput.setCharacterStream(writer);
+		lsSerializer.write(document, lsOutput);
 	}
 }
