@@ -1,9 +1,10 @@
-eclipselink-maven-plugin
-========================
+Eclipselink-maven-plugin
+=========================
+Eclipselink JPA maven plugin made to simplify life of a JPA developer.
 
-This plugin allows you to do away with the persistence.xml file as the classes are detected at compile, a persistence.xml file is generated,, and the classes are weaved. 
-
-If the persistence.xml file already exists, missing <class/> entries are added automatically.
+# Features
+* Allows you to get rid of the ```persistence.xml``` file as the classes are detected automatically and a persistence.xml file is generated. 
+* If the ```persistence.xml``` file already exists, missing ```<class>...</class>``` entries are added automatically. This allows you to have a basic configuration, but you do not have to manually add class entries.
 
 # Build status
 
@@ -19,4 +20,25 @@ http://ethlo.com/maven
 	<artifactId>eclipselink-maven-plugin</artifactId>
 	<version>0.3-SNAPSHOT</version>
 </dependency>
+```
+
+# Usage
+
+```xml
+<plugin>
+	<groupId>com.ethlo.persistence.tools</groupId>
+	<artifactId>eclipselink-maven-plugin</artifactId>
+	<version>0.3-SNAPSHOT</version>
+	<configuration>
+		<prefix>com.kezzler</prefix>
+	</configuration>
+	<executions>
+		<execution>
+			<phase>process-classes</phase>
+			<goals>
+				<goal>weave</goal>
+			</goals>
+		</execution>
+	</executions>
+</plugin>
 ```
