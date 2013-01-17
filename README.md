@@ -30,7 +30,7 @@ http://ethlo.com/maven
 	<artifactId>eclipselink-maven-plugin</artifactId>
 	<version>0.3-SNAPSHOT</version>
 	<configuration>
-		<prefix>com.kezzler</prefix>
+		<prefix>com.acme.model</prefix>
 	</configuration>
 	<executions>
 		<execution>
