@@ -9,6 +9,8 @@ Eclipselink JPA maven plugin made to simplify life of a JPA developer.
 
 # Build status
 
+Note: This plugin is under active development (thus the SNAPSHOT version)
+
 [![Build Status](https://travis-ci.org/ethlo/eclipselink-maven-plugin.png?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin)
 
 # Maven repository
@@ -25,14 +27,47 @@ http://ethlo.com/maven
 
 # Usage
 
+Static weaving:
 ```xml
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
 	<version>0.3-SNAPSHOT</version>
-	<configuration>
-		<prefix>com.acme.model</prefix>
-	</configuration>
+	<executions>
+		<execution>
+			<phase>process-classes</phase>
+			<goals>
+				<goal>weave</goal>
+			</goals>
+		</execution>
+	</executions>
+</plugin>
+```
+
+Meta-model generation:
+```xml
+<plugin>
+	<groupId>com.ethlo.persistence.tools</groupId>
+	<artifactId>eclipselink-maven-plugin</artifactId>
+	<version>0.3-SNAPSHOT</version>
+	<executions>
+		<execution>
+			<phase>generate-sources</phase>
+			<goals>
+				<goal>modelgen</goal>
+			</goals>
+		</execution>
+	</executions>
+</plugin>
+```
+
+Both weave and meta-model generation:
+
+```xml
+<plugin>
+	<groupId>com.ethlo.persistence.tools</groupId>
+	<artifactId>eclipselink-maven-plugin</artifactId>
+	<version>0.3-SNAPSHOT</version>
 	<executions>
 		<execution>
 			<id>weave</id>
