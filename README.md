@@ -49,7 +49,7 @@ Meta-model generation:
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>1.1-SNAPSHOT</version>
 	<executions>
 		<execution>
 			<phase>generate-sources</phase>
@@ -67,7 +67,7 @@ Both weave and meta-model generation:
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>1.1-SNAPSHOT</version>
 	<executions>
 		<execution>
 			<id>weave</id>
