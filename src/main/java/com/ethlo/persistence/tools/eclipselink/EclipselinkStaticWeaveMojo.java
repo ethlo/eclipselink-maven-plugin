@@ -26,6 +26,7 @@ import org.eclipse.persistence.logging.AbstractSessionLog;
 import org.eclipse.persistence.logging.SessionLog;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
 import org.scannotation.AnnotationDB;
+import org.sonatype.plexus.build.incremental.BuildContext;
 import org.w3c.dom.Document;
 
 /**
@@ -37,8 +38,12 @@ import org.w3c.dom.Document;
 public class EclipselinkStaticWeaveMojo extends AbstractMojo
 {
     /**
+     * @component
+     */
+    private BuildContext buildContext;
+    
+    /**
      * @parameter
-     * @required
      */
     private String prefix;
 	
@@ -69,6 +74,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
     {
     	final ClassLoader classLoader = new URLClassLoader(getClassPath(), Thread.currentThread().getContextClassLoader());
     	processWeaving(classLoader);
+    	getLog().info("Eclipselink JPA weaving completed");
     }
 
 	private void processWeaving(ClassLoader classLoader) throws MojoExecutionException
@@ -80,7 +86,10 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 				
     	try
         {
-    		getLog().info("Using package prefix '" + prefix + "'");
+    		if (prefix != null)
+    		{
+    			getLog().info("Using package prefix '" + prefix + "'");
+    		}
         	final URL[] classPath = getClassPath();
         	getLog().debug("Scanning class-path: " + Arrays.toString(classPath));
         	
@@ -220,17 +229,26 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 	private Set<String> filterClasses(Set<String> set)
 	{
 		final Set<String> retVal = new TreeSet<>();
-		if (set != null)
+		if (set == null)
 		{
-			for (String s : set)
+			return retVal;
+		}
+		else if (prefix != null)
+		{
+			
+			if (set != null)
 			{
-				if (s.startsWith(prefix))
+				for (String s : set)
 				{
-					retVal.add(s);
+					if (s.startsWith(prefix))
+					{
+						retVal.add(s);
+					}
 				}
 			}
+			return retVal;
 		}
-		return retVal;
+		return set;
 	}
 
 	private String[] getIgnoredPackages()

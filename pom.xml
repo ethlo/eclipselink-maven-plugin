@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>1.1-SNAPSHOT</version>
 	<packaging>maven-plugin</packaging>
 	<name>Eclipselink JPA maven plugin</name>
 	<description>Maven Plugin for Eclipselink supporting meta-model generation and static weaving</description>
@@ -110,7 +110,7 @@
 
 	<properties>
 		<maven-version>2.0.9</maven-version>
-		<eclipselink-version>2.4.1</eclipselink-version>
+		<eclipselink-version>2.5.0</eclipselink-version>
 	    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 

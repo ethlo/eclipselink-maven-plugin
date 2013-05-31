@@ -2,7 +2,7 @@ package com.ethlo.persistence.tools.eclipselink;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StringWriter;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -14,7 +14,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticCollector;
 import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
@@ -38,8 +41,8 @@ import org.sonatype.plexus.build.incremental.BuildContext;
  */
 public class EclipselinkModelGenMojo extends AbstractMojo
 {
-    private static final String JAVA_FILE_FILTER = "/*.java";
-    private static final String[] ALL_JAVA_FILES_FILTER = new String[] { "**" + JAVA_FILE_FILTER };
+    public static final String JAVA_FILE_FILTER = "/*.java";
+    public static final String[] ALL_JAVA_FILES_FILTER = new String[] { "**" + JAVA_FILE_FILTER };
     
     /**
      * @component
@@ -56,11 +59,6 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     private Set<String> includes = new HashSet<String>();
     
     /**
-     * @parameter
-     */
-    private boolean logOnlyOnError = false;
-	
-    /**
      * @parameter expression="${project.build.sourceDirectory}"
      */
     private File source;
@@ -69,6 +67,9 @@ public class EclipselinkModelGenMojo extends AbstractMojo
      * @parameter expression="${project.build.directory}/generated-sources/apt"
      */
     private File generatedSourcesDirectory;
+    
+    private boolean verbose = false;
+    private boolean noWarn = false;
 
     /**
      * @parameter expression="${project}"
@@ -103,7 +104,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     
     private File[] getClassPathFiles()
     {
-    	final List<File> files = new ArrayList<>(getCurrentClassPath());
+    	final Set<File> files = new TreeSet<>(getCurrentClassPath());
     	List<?> classpathElements;
 		try
 		{
@@ -141,6 +142,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         try (final StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null))
         {
 	        final Set<File> sourceFiles = getSourceFiles();
+	        getLog().info("Found " + sourceFiles.size() + " source files for potential processing");
 	        getLog().debug("Source files: " + Arrays.toString(sourceFiles.toArray()));
 	        Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFiles);
 	
@@ -151,16 +153,19 @@ public class EclipselinkModelGenMojo extends AbstractMojo
 	
 	        project.addCompileSourceRoot(this.generatedSourcesDirectory.getAbsolutePath());
 	        
-	        final Writer out = this.logOnlyOnError ? new StringWriter() : null;
-	        final CompilationTask task = compiler.getTask(out, fileManager, null, compilerOptions, null, compilationUnits);
-	        
+	        final Writer out = new PrintWriter(System.out);
+	        final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+	        final CompilationTask task = compiler.getTask(null, fileManager, diagnostics, compilerOptions, null, compilationUnits);
+	        for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics())
+	        {
+	        	getLog().warn(String.format("Error on line %d in %d%n",
+                             diagnostic.getLineNumber(),
+                             diagnostic.getSource().toUri()));
+	        }
 	        final Boolean retVal = task.call();
+	        out.flush();
 	        if (! retVal)
 	        {
-	        	if (out != null)
-	        	{
-	        		getLog().error(out.toString());
-	        	}
 	            throw new MojoExecutionException("Processing failed");
 	        }
 	
@@ -183,7 +188,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         }
         
         Set<File> files = new HashSet<File>();        
-        Scanner scanner = buildContext.newScanner(source);
+        final Scanner scanner = buildContext.newScanner(source);
         scanner.setIncludes(filters);
         scanner.scan();
         
@@ -202,7 +207,16 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         compilerOpts.put("cp", compileClassPath);
         compilerOpts.put("proc:only", null);
         compilerOpts.put("processor", processor);
-        compilerOpts.put("nowarn", null);
+        
+        if (this.noWarn)
+        {
+        	compilerOpts.put("nowarn", null);
+        }
+        
+        if (this.verbose)
+        {
+        	compilerOpts.put("verbose", null);
+        }
         
         getLog().info("Output directory: " + this.generatedSourcesDirectory.getAbsolutePath());
         if (! this.generatedSourcesDirectory.exists())
