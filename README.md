@@ -21,7 +21,7 @@ http://ethlo.com/maven
 <dependency>
   <groupId>com.ethlo.eclipselink.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>1.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -32,7 +32,7 @@ Static weaving:
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>0.3-SNAPSHOT</version>
+	<version>1.1-SNAPSHOT</version>
 	<executions>
 		<execution>
 			<phase>process-classes</phase>
