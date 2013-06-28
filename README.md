@@ -7,9 +7,9 @@ Eclipselink JPA maven plugin made to simplify life of a JPA developer.
 * Allows you to get rid of the ```persistence.xml``` file as the classes are detected automatically and a persistence.xml file is generated. 
 * If the ```persistence.xml``` file already exists, missing ```<class>...</class>``` entries are added automatically. This allows you to have a basic configuration, but you do not have to manually add class entries.
 
-# Build status
+Feedback and pull requests greatly appreciated.
 
-Note: This plugin is under active development (thus the SNAPSHOT version)
+# Build status
 
 [![Build Status](https://travis-ci.org/ethlo/eclipselink-maven-plugin.png?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin)
 
