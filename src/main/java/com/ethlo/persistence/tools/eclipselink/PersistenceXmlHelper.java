@@ -99,6 +99,7 @@ public class PersistenceXmlHelper
 	
 	public static Set<String> getClassesAlreadyDefined(Document doc)
 	{
+		final String ns = doc.getDocumentElement().getNamespaceURI();
 		final XPath xpath = factory.newXPath();
 		xpath.setNamespaceContext(new NamespaceContext()
 		{
@@ -106,7 +107,7 @@ public class PersistenceXmlHelper
 		    {
 		    	if ("ns".equals(prefix))
 		    	{
-		    		return JAVA_EE6_PERSISTENCE_NS;
+		    		return ns;
 		    	}
 		    	return XMLConstants.NULL_NS_URI;
 		    }
