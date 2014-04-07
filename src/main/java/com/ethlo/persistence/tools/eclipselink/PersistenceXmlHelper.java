@@ -20,6 +20,7 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
+import org.eclipse.persistence.jpa.jpql.Assert;
 import org.w3c.dom.DOMImplementation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -36,7 +37,8 @@ import org.xml.sax.SAXException;
  */
 public class PersistenceXmlHelper
 {
-	public static final String xmlNs = "http://java.sun.com/xml/ns/persistence";
+	public static final String JAVA_EE6_PERSISTENCE_NS = "http://java.sun.com/xml/ns/persistence";
+	public static final String JAVA_EE7_PERSISTENCE_NS = "http://xmlns.jcp.org/xml/ns/persistence";
 
 	private static final XPathFactory factory = XPathFactory.newInstance();
 	
@@ -58,14 +60,29 @@ public class PersistenceXmlHelper
 
 	public static void appendClasses(Document doc, Set<String> entityClasses)
 	{
-		final Node parent = doc.getDocumentElement().getElementsByTagNameNS(xmlNs, "persistence-unit").item(0);
+		final String nsUri = doc.getDocumentElement().getNamespaceURI();
+		Assert.isNotNull(nsUri, "Root element <persistence> should be defined");
+		final boolean isJavaEE6 = nsUri.equals(JAVA_EE6_PERSISTENCE_NS);
+		final boolean isJavaEE7 = nsUri.equals(JAVA_EE7_PERSISTENCE_NS);
 		
-		for (String entity : entityClasses)
-    	{
-    		final Element element = doc.createElementNS(xmlNs, "class");
-    		element.setTextContent(entity);
-    		parent.appendChild(element);
-    	}
+		Assert.isTrue(isJavaEE6 || isJavaEE7, "Root <persistence> element should be either " + JAVA_EE6_PERSISTENCE_NS + " or " + JAVA_EE7_PERSISTENCE_NS);
+		
+		final String targetNs = isJavaEE6 ? JAVA_EE6_PERSISTENCE_NS : JAVA_EE7_PERSISTENCE_NS;
+		
+		final NodeList persistenceUnits = doc.getDocumentElement().getElementsByTagNameNS(targetNs, "persistence-unit");
+		Assert.isNotNull(persistenceUnits, "Could not find a <persistence-unit> element");
+		
+		
+		for (int i = 0; i < persistenceUnits.getLength(); i++)
+		{
+			final Node persistenceUnit = persistenceUnits.item(i);
+			for (String entity : entityClasses)
+	    	{
+	    		final Element element = doc.createElementNS(targetNs, "class");
+	    		element.setTextContent(entity);
+	    		persistenceUnit.appendChild(element);
+	    	}
+		}
 	}
 
 	public static Document parseXml(File targetFile)
@@ -89,7 +106,7 @@ public class PersistenceXmlHelper
 		    {
 		    	if ("ns".equals(prefix))
 		    	{
-		    		return xmlNs;
+		    		return JAVA_EE6_PERSISTENCE_NS;
 		    	}
 		    	return XMLConstants.NULL_NS_URI;
 		    }
