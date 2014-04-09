@@ -6,16 +6,16 @@ package com.ethlo.persistence.tools.eclipselink;
  */
 public class ReflectionHelper
 {
-	public static boolean classExists(String fqName, ClassLoader classLoader)
-	{
-		try
-		{
-			Class.forName(fqName, false, classLoader);
-			return true;
-		}
-		catch(ClassNotFoundException e)
-		{
-			return false;
-		}
-	}
+    public static boolean classExists(String fqName, ClassLoader classLoader)
+    {
+        try
+        {
+            Class.forName(fqName, false, classLoader);
+            return true;
+        }
+        catch (ClassNotFoundException e)
+        {
+            return false;
+        }
+    }
 }
