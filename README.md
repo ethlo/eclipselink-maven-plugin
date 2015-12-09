@@ -16,12 +16,16 @@ Feedback and pull requests greatly appreciated.
 # Maven repository
 http://ethlo.com/maven
 
+# Version compatibility
+
+Versions are now following the JPA API, so 2.0 will work with JPA 2.0 providers, etc.
+
 # Maven artifact
 ```xml
 <dependency>
   <groupId>com.ethlo.eclipselink.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>2.x</version>
 </dependency>
 ```
 
@@ -32,7 +36,7 @@ Static weaving:
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>2.x</version>
 	<executions>
 		<execution>
 			<phase>process-classes</phase>
@@ -49,7 +53,7 @@ Meta-model generation:
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>2.x</version>
 	<executions>
 		<execution>
 			<phase>generate-sources</phase>
@@ -67,7 +71,7 @@ Both weave and meta-model generation:
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>2.x</version>
 	<executions>
 		<execution>
 			<id>weave</id>
