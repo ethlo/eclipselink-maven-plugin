@@ -3,3 +3,5 @@
 .settings
 target
 pom.xml.versionsBackup
+.idea
+eclipselink-maven-plugin.iml
