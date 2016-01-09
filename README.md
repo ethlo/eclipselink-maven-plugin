@@ -11,7 +11,11 @@ Feedback and pull requests greatly appreciated.
 
 # Build status
 
+####Project
 [![Build Status](https://travis-ci.org/ethlo/eclipselink-maven-plugin.png?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin)
+
+####Tests
+[![Build Status test project](https://travis-ci.org/ethlo/eclipselink-maven-plugin-test.png?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin-test)
 
 # Maven repository
 http://ethlo.com/maven
