@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.persistence.Converter;
 import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.MappedSuperclass;
@@ -175,6 +176,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo {
 		entityClasses.addAll(findEntities(db, Entity.class));
 		entityClasses.addAll(findEntities(db, MappedSuperclass.class));
 		entityClasses.addAll(findEntities(db, Embeddable.class));
+		entityClasses.addAll(findEntities(db, Converter.class));
 		return entityClasses;
 	}
 
