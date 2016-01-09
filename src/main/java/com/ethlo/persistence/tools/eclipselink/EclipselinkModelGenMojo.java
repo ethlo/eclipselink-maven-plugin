@@ -28,6 +28,11 @@ import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
+import org.apache.maven.plugins.annotations.Component;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.Scanner;
 import org.codehaus.plexus.util.StringUtils;
@@ -35,57 +40,38 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * @author Morten Haraldsen
- * @goal modelgen
- * @phase generate-sources
- * @requiresDependencyResolution compile
  */
+@Mojo(requiresDependencyResolution=ResolutionScope.COMPILE, defaultPhase=LifecyclePhase.GENERATE_SOURCES, name="modelgen", requiresProject=true)
 public class EclipselinkModelGenMojo extends AbstractMojo
 {
     public static final String PLUGIN_PREFIX = "JPA modelgen: ";
     public static final String JAVA_FILE_FILTER = "/*.java";
     public static final String[] ALL_JAVA_FILES_FILTER = new String[] { "**" + JAVA_FILE_FILTER };
 
-    /**
-     * @component
-     */
+    @Component
     private BuildContext buildContext;
 
     /**
      * A list of inclusion package filters for the apt processor.
-     * 
-     * If not specified all sources will be used for apt processor
-     * 
-     * @parameter
+     * If not specified all sources will be used
      */
+    @Parameter
     private Set<String> includes = new HashSet<String>();
 
-    /**
-     * @parameter expression="${project.build.sourceDirectory}"
-     */
+    @Parameter(defaultValue="${project.build.sourceDirectory}", required=true)
     private File source;
 
-    /**
-     * @parameter expression="${project.build.directory}/generated-sources/apt"
-     */
+    @Parameter(defaultValue="${project.build.directory}/generated-sources/apt")    
     private File generatedSourcesDirectory;
 
     private boolean verbose = false;
     private boolean noWarn = false;
 
-    /**
-     * @parameter expression="${project}"
-     * @required
-     * @readonly
-     */
-    private MavenProject project;
+    @Parameter( defaultValue = "${project}", readonly = true, required=true)
+    protected MavenProject project;
 
-    // Use Hibernate's model generator as it does not require persistence.xml
-    // file to run
-    private String processor = org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor.class.getName();
-
-    // Eclipselink requires pesistence.xml
-    // private String processor =
-    // "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor";
+    // Use Hibernate's model generator as it does not require persistence.xml file to run
+    private final String processor = org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor.class.getName();
 
     private List<File> getCurrentClassPath()
     {
