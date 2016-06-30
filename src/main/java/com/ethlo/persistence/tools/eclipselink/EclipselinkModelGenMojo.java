@@ -149,18 +149,18 @@ public class EclipselinkModelGenMojo extends AbstractMojo
 
             project.addCompileSourceRoot(this.generatedSourcesDirectory.getAbsolutePath());
 
-            final Writer out = new PrintWriter(System.out);
             final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
             final CompilationTask task = compiler.getTask(null, fileManager, diagnostics, compilerOptions, null, compilationUnits);
-            for (Diagnostic<? extends JavaFileObject> diagnostic : diagnostics.getDiagnostics())
-            {
-                warn(String.format("Error on line %d in %d%n", diagnostic.getLineNumber(), diagnostic.getSource().toUri()));
-            }
             final Boolean retVal = task.call();
-            out.flush();
+            final StringBuilder s = new StringBuilder();
+			for (Diagnostic<?> diagnostic : diagnostics.getDiagnostics())
+			{
+				s.append("\n" + diagnostic);
+			}
+			
             if (!retVal)
             {
-                throw new MojoExecutionException("Processing failed");
+                throw new MojoExecutionException("Processing failed: " + s.toString());
             }
 
             buildContext.refresh(this.generatedSourcesDirectory);
