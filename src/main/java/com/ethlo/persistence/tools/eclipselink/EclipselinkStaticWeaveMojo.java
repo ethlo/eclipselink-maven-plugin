@@ -37,16 +37,18 @@ import org.w3c.dom.Document;
  */
 @Mojo(requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES, name = "weave", requiresProject = true)
 public class EclipselinkStaticWeaveMojo extends AbstractMojo {
-	/**
-	 * @parameter
-	 */
-	private String prefix;
+
+	@Parameter
+	private String basePackage;
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
 	private File source;
 
 	@Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
 	private File target;
+
+	@Parameter(defaultValue = "${project.build.outputDirectory}")
+	private File persistenceInfoLocation;
 
 	@Parameter(defaultValue = "WARNING", property = "logLevel")
 	private String logLevel;
@@ -69,8 +71,8 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo {
 		}
 
 		try {
-			if (prefix != null) {
-				getLog().info("Using package prefix '" + prefix + "'");
+			if (basePackage != null) {
+				getLog().info("Only entities from base package '" + basePackage + "' will be included in persistence.xml");
 			}
 			final URL[] classPath = getClassPath();
 			getLog().debug("Scanning class-path: " + Arrays.toString(classPath));
@@ -81,19 +83,13 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo {
 			final Set<String> entityClasses = findEntities(db);
 			getLog().info("Entities found : " + entityClasses.size());
 
-			final File targetFile = new File(this.target + "/META-INF/persistence.xml");
-			getLog().info("Target file: " + targetFile);
+			processPersistenceXml(classLoader, entityClasses);
 
-			final String name = project.getArtifactId();
-			final Document doc = targetFile.exists() ? PersistenceXmlHelper.parseXml(targetFile)
-					: PersistenceXmlHelper.createXml(name);
-
-			checkExisting(targetFile, classLoader, doc, entityClasses);
-
-			PersistenceXmlHelper.appendClasses(doc, entityClasses);
-			PersistenceXmlHelper.outputXml(doc, targetFile);
+			getLog().info("Source classes dir: " + source);
+			getLog().info("Target classes dir: " + target);
 
 			final StaticWeaveProcessor weaveProcessor = new StaticWeaveProcessor(source, target);
+			weaveProcessor.setPersistenceInfo(persistenceInfoLocation);
 			weaveProcessor.setClassLoader(classLoader);
 			weaveProcessor.setLog(new PrintWriter(System.out));
 			weaveProcessor.setLogLevel(getLogLevel());
@@ -102,6 +98,20 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo {
 			throw new MojoExecutionException("Error", e);
 		}
 
+	}
+
+	private void processPersistenceXml(ClassLoader classLoader, Set<String> entityClasses) {
+		final File targetFile = new File(this.persistenceInfoLocation + "/META-INF/persistence.xml");
+		getLog().info("persistence.xml location: " + targetFile);
+
+		final String name = project.getArtifactId();
+		final Document doc = targetFile.exists() ? PersistenceXmlHelper.parseXml(targetFile)
+				: PersistenceXmlHelper.createXml(name);
+
+		checkExisting(targetFile, classLoader, doc, entityClasses);
+
+		PersistenceXmlHelper.appendClasses(doc, entityClasses);
+		PersistenceXmlHelper.outputXml(doc, targetFile);
 	}
 
 	private void checkExisting(File targetFile, ClassLoader classLoader, Document doc, Set<String> entityClasses) {
@@ -188,11 +198,11 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo {
 		final Set<String> retVal = new TreeSet<>();
 		if (set == null) {
 			return retVal;
-		} else if (prefix != null) {
+		} else if (basePackage != null) {
 
 			if (set != null) {
 				for (String s : set) {
-					if (s.startsWith(prefix)) {
+					if (s.startsWith(basePackage)) {
 						retVal.add(s);
 					}
 				}
