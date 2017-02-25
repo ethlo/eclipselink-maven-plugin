@@ -22,7 +22,7 @@ http://ethlo.com/maven
 
 # Version compatibility
 
-Versions are now following the JPA API, so 2.0 will work with JPA 2.0 providers, etc.
+Versions are now following the EclipseLink releases.
 
 # Maven artifact
 ```xml
