@@ -12,7 +12,7 @@ Eclipselink JPA maven plugin made to simplify life of a JPA developer.
 * If the ```persistence.xml``` file already exists, missing ```<class>...</class>``` entries are added automatically. This allows you to have a basic configuration, but you do not have to manually add class entries.
 
 # Test project
-A simple test project can be found [here](hhttps://github.com/ethlo/eclipselink-maven-plugin-test)
+A simple test project can be found [here](https://github.com/ethlo/eclipselink-maven-plugin-test)
 
 # Usage
 
