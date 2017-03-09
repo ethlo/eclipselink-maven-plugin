@@ -1,7 +1,7 @@
 Eclipselink-maven-plugin
 =========================
-[![Maven Central](https://img.shields.io/maven-central/v/com.ethlo.persistence.tools/eclipselink-maven-plugin.svg)]()
-[![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)]()
+[![Maven Central](https://img.shields.io/maven-central/v/com.ethlo.persistence.tools/eclipselink-maven-plugin.svg)](http://mvnrepository.com/artifact/com.ethlo.persistence.tools/eclipselink-maven-plugin)
+[![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](LICENSE)
 [![Build Status](https://travis-ci.org/ethlo/eclipselink-maven-plugin.svg?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin)
 
 Eclipselink JPA maven plugin made to simplify life of a JPA developer.
