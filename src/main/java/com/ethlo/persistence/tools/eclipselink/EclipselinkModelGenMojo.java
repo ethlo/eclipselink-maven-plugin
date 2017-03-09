@@ -2,8 +2,6 @@ package com.ethlo.persistence.tools.eclipselink;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -258,10 +256,5 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     private void info(String msg)
     {
         getLog().info(PLUGIN_PREFIX + msg);
-    }
-
-    private void warn(String msg)
-    {
-        getLog().warn(PLUGIN_PREFIX + msg);
     }
 }

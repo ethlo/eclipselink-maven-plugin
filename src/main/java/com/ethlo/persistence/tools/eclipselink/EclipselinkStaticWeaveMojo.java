@@ -3,7 +3,6 @@ package com.ethlo.persistence.tools.eclipselink;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -29,8 +28,10 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.persistence.logging.AbstractSessionLog;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
-import org.scannotation.AnnotationDB;
 import org.w3c.dom.Document;
+
+import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 
 /**
  * @author Morten Haraldsen
@@ -77,10 +78,11 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo {
 			final URL[] classPath = getClassPath();
 			getLog().debug("Scanning class-path: " + Arrays.toString(classPath));
 
-			final AnnotationDB db = new AnnotationDB();
-			db.setIgnoredPackages(getIgnoredPackages());
-			db.scanArchives(classPath);
-			final Set<String> entityClasses = findEntities(db);
+			final FastClasspathScanner scanner = new FastClasspathScanner(basePackage != null ? new String[]{basePackage} : new String[0])
+			      .overrideClasspath((Object[]) classPath);
+			
+            final ScanResult scanResult = scanner.scan();
+            final Set<String> entityClasses = findEntities(scanResult);
 			getLog().info("Entities found : " + entityClasses.size());
 
 			processPersistenceXml(classLoader, entityClasses);
@@ -117,11 +119,6 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo {
 	private void checkExisting(File targetFile, ClassLoader classLoader, Document doc, Set<String> entityClasses) {
 		if (targetFile.exists()) {
 			final Set<String> alreadyDefined = PersistenceXmlHelper.getClassesAlreadyDefined(doc);
-			for (String className : alreadyDefined) {
-				if (!ReflectionHelper.classExists(className, classLoader)) {
-					getLog().warn("Class " + className + " defined in " + targetFile + " does not exist");
-				}
-			}
 
 			if (!alreadyDefined.containsAll(entityClasses)) {
 				final Set<String> undefined = new TreeSet<>();
@@ -181,38 +178,8 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo {
 		}
 	}
 
-	private Set<String> findEntities(AnnotationDB db) {
-		final Set<String> entityClasses = new TreeSet<>();
-		entityClasses.addAll(findEntities(db, Entity.class));
-		entityClasses.addAll(findEntities(db, MappedSuperclass.class));
-		entityClasses.addAll(findEntities(db, Embeddable.class));
-		entityClasses.addAll(findEntities(db, Converter.class));
-		return entityClasses;
-	}
-
-	private Set<String> findEntities(AnnotationDB db, Class<? extends Annotation> annotation) {
-		return filterClasses(db.getAnnotationIndex().get(annotation.getName()));
-	}
-
-	private Set<String> filterClasses(Set<String> set) {
-		final Set<String> retVal = new TreeSet<>();
-		if (set == null) {
-			return retVal;
-		} else if (basePackage != null) {
-
-			if (set != null) {
-				for (String s : set) {
-					if (s.startsWith(basePackage)) {
-						retVal.add(s);
-					}
-				}
-			}
-			return retVal;
-		}
-		return set;
-	}
-
-	private String[] getIgnoredPackages() {
-		return new String[] { "java", "org.maven" };
-	}
+	private Set<String> findEntities(ScanResult scanResult)
+    {
+        return new TreeSet<>(scanResult.getNamesOfClassesWithAnnotationsAnyOf(Entity.class, MappedSuperclass.class, Embeddable.class, Converter.class));
+    }
 }
