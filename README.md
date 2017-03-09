@@ -1,5 +1,9 @@
 Eclipselink-maven-plugin
 =========================
+[![Maven Central](https://img.shields.io/maven-central/v/com.ethlo.persistence.tools/eclipselink-maven-plugin.svg)](http://mvnrepository.com/artifact/com.ethlo.persistence.tools/eclipselink-maven-plugin)
+[![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](LICENSE)
+[![Build Status](https://travis-ci.org/ethlo/eclipselink-maven-plugin.svg?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin)
+
 Eclipselink JPA maven plugin made to simplify life of a JPA developer.
 
 # Features
@@ -7,31 +11,8 @@ Eclipselink JPA maven plugin made to simplify life of a JPA developer.
 * Allows you to get rid of the ```persistence.xml``` file as the classes are detected automatically and a persistence.xml file is generated. 
 * If the ```persistence.xml``` file already exists, missing ```<class>...</class>``` entries are added automatically. This allows you to have a basic configuration, but you do not have to manually add class entries.
 
-Feedback and pull requests greatly appreciated.
-
-# Build status
-
-####Project
-[![Build Status](https://travis-ci.org/ethlo/eclipselink-maven-plugin.png?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin)
-
-####Tests
-[![Build Status test project](https://travis-ci.org/ethlo/eclipselink-maven-plugin-test.png?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin-test)
-
-# Maven repository
-http://ethlo.com/maven
-
-# Version compatibility
-
-Versions are now following the JPA API, so 2.0 will work with JPA 2.0 providers, etc.
-
-# Maven artifact
-```xml
-<dependency>
-  <groupId>com.ethlo.eclipselink.tools</groupId>
-	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>2.x</version>
-</dependency>
-```
+# Test project
+A simple test project can be found [here](https://github.com/ethlo/eclipselink-maven-plugin-test)
 
 # Usage
 
