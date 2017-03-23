@@ -21,7 +21,7 @@ Static weaving:
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>2.x</version>
+	<version>${eclipselink-maven-plugin.version}</version>
 	<executions>
 		<execution>
 			<phase>process-classes</phase>
@@ -38,7 +38,7 @@ Meta-model generation:
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>2.x</version>
+	<version>${eclipselink-maven-plugin.version}</version>
 	<executions>
 		<execution>
 			<phase>generate-sources</phase>
@@ -50,12 +50,12 @@ Meta-model generation:
 </plugin>
 ```
 
-Both weave and meta-model generation and setting `basePackage`:
+Both weave, DDL and meta-model generation and setting `basePackage`:
 ```xml
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>2.x</version>
+	<version>${eclipselink-maven-plugin.version}</version>
 	<executions>
 		<execution>
 			<id>weave</id>
@@ -63,6 +63,16 @@ Both weave and meta-model generation and setting `basePackage`:
 			<goals>
 				<goal>weave</goal>
 			</goals>
+		</execution>
+		<execution>
+			<id>ddl</id>
+			<phase>process-classes</phase>
+			<goals>
+				<goal>ddl</goal>
+			</goals>
+			<configuration>
+				<databaseProductName>mysql</databaseProductName>
+			</configuration>
 		</execution>
 		<execution>
 			<id>modelgen</id>
