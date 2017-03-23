@@ -1,10 +1,10 @@
-Eclipselink-maven-plugin
+eclipselink-maven-plugin
 =========================
 [![Maven Central](https://img.shields.io/maven-central/v/com.ethlo.persistence.tools/eclipselink-maven-plugin.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.ethlo.persistence.tools%22%20AND%20a%3A%22eclipselink-maven-plugin%22)
 [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](LICENSE)
 [![Build Status](https://travis-ci.org/ethlo/eclipselink-maven-plugin.svg?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin)
 
-Eclipselink JPA maven plugin made to simplify life of a JPA developer.
+Eclipselink JPA maven plugin made to simplify life of the [Eclipselink](http://www.eclipse.org/eclipselink/) JPA developer.
 
 # Features
 * No need to setup special APT processor for canonical model generation, just use goal ```modelgen```.
