@@ -9,9 +9,9 @@ package com.ethlo.persistence.tools.eclipselink;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,7 +50,7 @@ import org.springframework.util.StringUtils;
 public class EclipselinkDdlGenerationMojo extends AbstractMojo
 {
     @Parameter(required = true)
-    private String basePackage;
+    private String[] basePackages;
 
     @Parameter(required = true)
     private String databaseProductName;
@@ -74,7 +74,7 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
     public void execute() throws MojoExecutionException
     {
         setLogLevel(logLevel);
-        
+
         final Thread thread = Thread.currentThread();
         final ClassLoader currentClassLoader = thread.getContextClassLoader();
         try
@@ -97,12 +97,12 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
     public void generateSchema()
     {
         final Map<String, Object> cfg = buildCfg();
-        getLog().info("Using base package " + basePackage);
+        getLog().info("Using base packages " + basePackages);
         final PersistenceProvider provider = new PersistenceProvider();
         final DefaultPersistenceUnitManager manager = new DefaultPersistenceUnitManager();
         manager.setDefaultPersistenceUnitRootLocation(null);
         manager.setDefaultPersistenceUnitName("default");
-        manager.setPackagesToScan(basePackage);
+        manager.setPackagesToScan(basePackages);
         manager.setPersistenceXmlLocations(new String[0]);
         manager.afterPropertiesSet();
 
@@ -117,24 +117,24 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
     private Map<String, Object> buildCfg()
     {
         final Map<String, Object> cfg = new TreeMap<>();
-        
+
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION, PersistenceUnitProperties.SCHEMA_GENERATION_NONE_ACTION);
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_ACTION);
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_SOURCE, PersistenceUnitProperties.SCHEMA_GENERATION_METADATA_SOURCE);
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_CREATE_TARGET, ddlTargetFile);
         cfg.put(PersistenceUnitProperties.SCHEMA_DATABASE_PRODUCT_NAME, databaseProductName);
         cfg.put(PersistenceUnitProperties.WEAVING, "false");
-        
+
         if (databaseMajorVersion != null)
         {
             cfg.put(PersistenceUnitProperties.SCHEMA_DATABASE_MAJOR_VERSION, databaseMajorVersion);
         }
-        
+
         if (databaseMinorVersion != null)
         {
             cfg.put(PersistenceUnitProperties.SCHEMA_DATABASE_MINOR_VERSION, databaseMinorVersion);
         }
-        
+
         return cfg;
     }
 
