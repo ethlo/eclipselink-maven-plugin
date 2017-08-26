@@ -9,9 +9,9 @@ package com.ethlo.persistence.tools.eclipselink;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *      http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -41,6 +41,7 @@ import javax.persistence.MappedSuperclass;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -48,6 +49,7 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.persistence.logging.AbstractSessionLog;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
+import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 
 import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
@@ -59,6 +61,9 @@ import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
 @Mojo(requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES, name = "weave", requiresProject = true)
 public class EclipselinkStaticWeaveMojo extends AbstractMojo
 {
+
+    @Parameter
+    private String basePackage;
 
     @Parameter
     private String[] basePackages;
@@ -83,11 +88,18 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
     {
         setLogLevel(logLevel);
         final ClassLoader classLoader = new URLClassLoader(getClassPath(), Thread.currentThread().getContextClassLoader());
-        processWeaving(classLoader);
+        try
+        {
+            processWeaving(classLoader);
+        }
+        catch (Exception e)
+        {
+            throw new MojoExecutionException(e.getMessage(), e);
+        }
         getLog().info("Eclipselink weaving completed");
     }
 
-    private void processWeaving(ClassLoader classLoader) throws MojoExecutionException
+    private void processWeaving(ClassLoader classLoader) throws MojoExecutionException, MojoFailureException
     {
         if (!source.exists())
         {
@@ -96,15 +108,16 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 
         try
         {
-            if (basePackages != null)
+            String[] allBasePackages = this.getBasePackages();
+            if (allBasePackages.length > 0)
             {
-                getLog().info("Only entities from base packages '" + basePackages + "' will be included in persistence.xml");
+                getLog().info("Only entities from base packages '" + StringUtils.arrayToDelimitedString(allBasePackages, ", ") + "' will be included in persistence.xml");
             }
             final URL[] classPath = getClassPath();
             getLog().debug("Scanning class-path: " + Arrays.toString(classPath));
 
-            final FastClasspathScanner scanner = new FastClasspathScanner(basePackages != null ?
-            basePackages : new String[0]).overrideClasspath((Object[]) classPath);
+            final FastClasspathScanner scanner = new FastClasspathScanner(allBasePackages)
+                .overrideClasspath((Object[]) classPath);
 
             final ScanResult scanResult = scanner.scan();
             final Set<String> entityClasses = findEntities(scanResult);
@@ -226,4 +239,29 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
     {
         return new TreeSet<>(scanResult.getNamesOfClassesWithAnnotationsAnyOf(Entity.class, MappedSuperclass.class, Embeddable.class, Converter.class));
     }
+
+    private String[] getBasePackages() throws MojoFailureException
+    {
+        List<String> allBasePackages = new ArrayList<>();
+        if (basePackage != null && basePackages != null)
+        {
+            throw new MojoFailureException("<basePackage> and <basePackages> are mutually exclusive");
+        }
+
+        if (basePackage != null)
+        {
+            allBasePackages.add(basePackage);
+        } 
+        else if (basePackages != null)
+        {
+            if (basePackages.length == 0)
+                {
+                    throw new MojoFailureException("No <basePackage> elements specified within <basePackages>");
+                }
+            allBasePackages.addAll(Arrays.asList(basePackages));
+        }
+
+        return StringUtils.toStringArray(allBasePackages);
+    }
+
 }
