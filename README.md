@@ -50,7 +50,7 @@ Meta-model generation:
 </plugin>
 ```
 
-Both weave, DDL and meta-model generation and setting `basePackage`:
+Both weave, DDL and meta-model generation and setting `basePackages`:
 ```xml
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
@@ -83,7 +83,10 @@ Both weave, DDL and meta-model generation and setting `basePackage`:
 		</execution>
 	</executions>
 	<configuration>
-		<basePackage>org.my.project</basePackage>
+		<basePackages>
+			<basePackage>org.my.projectA</basePackage>
+			<basePackage>org.my.projectB</basePackage>
+		</basePackages>
 	</configuration>
 </plugin>
 ```

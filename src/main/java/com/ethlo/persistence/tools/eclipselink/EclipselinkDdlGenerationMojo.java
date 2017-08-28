@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -32,6 +33,7 @@ import java.util.TreeMap;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
@@ -49,8 +51,11 @@ import org.springframework.util.StringUtils;
 @Mojo(requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES, name = "ddl", requiresProject = true)
 public class EclipselinkDdlGenerationMojo extends AbstractMojo
 {
-    @Parameter(required = true)
+    @Parameter(required = false)
     private String basePackage;
+
+    @Parameter(required = false)
+    private String[] basePackages;
 
     @Parameter(required = true)
     private String databaseProductName;
@@ -94,15 +99,16 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
         getLog().info("Eclipselink DDL completed");
     }
 
-    public void generateSchema()
+    public void generateSchema() throws MojoFailureException
     {
         final Map<String, Object> cfg = buildCfg();
-        getLog().info("Using base package " + basePackage);
+        String[] allBasePackages = this.getBasePackages();
+        getLog().info("Using base packages " + StringUtils.arrayToDelimitedString(allBasePackages, ", "));
         final PersistenceProvider provider = new PersistenceProvider();
         final DefaultPersistenceUnitManager manager = new DefaultPersistenceUnitManager();
         manager.setDefaultPersistenceUnitRootLocation(null);
         manager.setDefaultPersistenceUnitName("default");
-        manager.setPackagesToScan(basePackage);
+        manager.setPackagesToScan(allBasePackages);
         manager.setPersistenceXmlLocations(new String[0]);
         manager.afterPropertiesSet();
 
@@ -170,4 +176,34 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
             throw new MojoExecutionException("Dependency resolution failed", e);
         }
     }
+
+    private String[] getBasePackages() throws MojoFailureException
+    {
+        List<String> allBasePackages = new ArrayList<>();
+        if (basePackage == null && basePackages == null)
+        {
+            throw new MojoFailureException("<basePackage> or <basePackages> elements are mandatory");
+        } 
+        else if (basePackage != null && basePackages != null)
+        {
+            throw new MojoFailureException("<basePackage> and <basePackages> are mutually exclusive");
+        }
+
+        if (basePackage != null)
+        {
+            allBasePackages.add(basePackage);
+        }
+
+        if (basePackages != null)
+        {
+            if (basePackages.length == 0)
+            {
+                throw new MojoFailureException("No <basePackage> elements specified within <basePackages>");
+            }
+            allBasePackages.addAll(Arrays.asList(basePackages));
+        }
+
+        return StringUtils.toStringArray(allBasePackages);
+    }
+
 }
