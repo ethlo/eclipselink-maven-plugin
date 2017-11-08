@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>2.6.4.2-SNAPSHOT</version>
+	<version>2.7.0</version>
 	<packaging>maven-plugin</packaging>
 	<name>Eclipselink Maven Plugin</name>
 	<description>Maven Plugin for Eclipselink supporting static weaving, meta-model generation and DDL generation</description>
@@ -208,11 +208,17 @@
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
 			<version>${eclipselink-version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.eclipse.persistence</groupId>
+					<artifactId>javax.persistence</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>javax.persistence</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.data</groupId>
@@ -221,7 +227,7 @@
 	</dependencies>
 	<properties>
 		<maven-version>3.3.9</maven-version>
-		<eclipselink-version>2.6.4</eclipselink-version>
+		<eclipselink-version>2.7.0</eclipselink-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<gpg.skip>true</gpg.skip>
 	</properties>
