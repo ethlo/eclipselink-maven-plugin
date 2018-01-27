@@ -208,12 +208,6 @@
 			<groupId>org.eclipse.persistence</groupId>
 			<artifactId>eclipselink</artifactId>
 			<version>${eclipselink-version}</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.eclipse.persistence</groupId>
-					<artifactId>javax.persistence</artifactId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.persistence</groupId>
@@ -227,7 +221,7 @@
 	</dependencies>
 	<properties>
 		<maven-version>3.3.9</maven-version>
-		<eclipselink-version>2.7.0</eclipselink-version>
+		<eclipselink-version>2.7.1</eclipselink-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<gpg.skip>true</gpg.skip>
 	</properties>
