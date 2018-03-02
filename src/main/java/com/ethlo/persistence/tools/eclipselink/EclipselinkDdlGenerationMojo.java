@@ -21,6 +21,9 @@ package com.ethlo.persistence.tools.eclipselink;
  */
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -66,8 +69,11 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
     @Parameter(required = false)
     private String databaseMinorVersion;
 
-    @Parameter(defaultValue = "${project.build.outputDirectory}/ddl.sql")
-    private File ddlTargetFile;
+    @Parameter(defaultValue = "${project.build.outputDirectory}/ddl-create.sql")
+    private File ddlCreateTargetFile;
+
+    @Parameter(defaultValue = "${project.build.outputDirectory}/ddl-drop.sql")
+    private File ddlDropTargetFile;
 
     @Parameter(defaultValue = "WARNING", property = "logLevel")
     private String logLevel;
@@ -120,14 +126,24 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
         provider.generateSchema(new DelegatingPuInfo(puInfo), cfg);
     }
 
-    private Map<String, Object> buildCfg()
+    private Map<String, Object> buildCfg() throws MojoFailureException
     {
         final Map<String, Object> cfg = new TreeMap<>();
         
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION, PersistenceUnitProperties.SCHEMA_GENERATION_NONE_ACTION);
-        cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_ACTION);
+        cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, PersistenceUnitProperties.SCHEMA_GENERATION_DROP_AND_CREATE_ACTION);
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_SOURCE, PersistenceUnitProperties.SCHEMA_GENERATION_METADATA_SOURCE);
-        cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_CREATE_TARGET, ddlTargetFile);
+        cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_DROP_SOURCE, PersistenceUnitProperties.SCHEMA_GENERATION_METADATA_SOURCE);
+        try {
+            cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_DROP_TARGET, new FileWriter(ddlDropTargetFile));
+        } catch(IOException ioe) {
+            throw new MojoFailureException("Error Writing to DDL Drop Target: '"+ddlDropTargetFile+"'", ioe);
+        }
+        try {
+            cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_CREATE_TARGET, new FileWriter(ddlCreateTargetFile));
+        } catch(IOException ioe) {
+            throw new MojoFailureException("Error Writing to DDL Create Target: '"+ddlCreateTargetFile+"' Not Found!", ioe);
+        }
         cfg.put(PersistenceUnitProperties.SCHEMA_DATABASE_PRODUCT_NAME, databaseProductName);
         cfg.put(PersistenceUnitProperties.WEAVING, "false");
         
