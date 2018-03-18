@@ -66,14 +66,23 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
     @Parameter(required = false)
     private String databaseMinorVersion;
 
-    @Parameter(defaultValue = "${project.build.outputDirectory}/ddl.sql")
-    private File ddlTargetFile;
+    @Parameter(defaultValue = "file://${project.build.outputDirectory}/ddl.sql")
+    private String ddlTargetFile;
+    
+    @Parameter(defaultValue = "file://${project.build.outputDirectory}/ddl-drop.sql")
+    private String ddlDropTargetFile;
 
     @Parameter(defaultValue = "WARNING", property = "logLevel")
     private String logLevel;
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
+    
+    /**
+     * Valid options 'create', 'drop', 'drop-and-create'
+     */
+    @Parameter(required = false)
+    private String action = PersistenceUnitProperties.SCHEMA_GENERATION_DROP_AND_CREATE_ACTION;
 
     @Override
     public void execute() throws MojoExecutionException
@@ -109,7 +118,8 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
         manager.setDefaultPersistenceUnitRootLocation(null);
         manager.setDefaultPersistenceUnitName("default");
         manager.setPackagesToScan(allBasePackages);
-        manager.setPersistenceXmlLocations(new String[0]);
+        final String[] zeroPULocations = new String[]{};
+        manager.setPersistenceXmlLocations(zeroPULocations);
         manager.afterPropertiesSet();
 
         final SmartPersistenceUnitInfo puInfo = (SmartPersistenceUnitInfo) manager.obtainDefaultPersistenceUnitInfo();
@@ -124,10 +134,15 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
     {
         final Map<String, Object> cfg = new TreeMap<>();
         
+        // No action towards the database
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION, PersistenceUnitProperties.SCHEMA_GENERATION_NONE_ACTION);
-        cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_ACTION);
+        
+        // Create scripts
+        cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, action);
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_SOURCE, PersistenceUnitProperties.SCHEMA_GENERATION_METADATA_SOURCE);
+        cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_DROP_SOURCE, PersistenceUnitProperties.SCHEMA_GENERATION_METADATA_SOURCE);
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_CREATE_TARGET, ddlTargetFile);
+        cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_DROP_TARGET, ddlDropTargetFile);
         cfg.put(PersistenceUnitProperties.SCHEMA_DATABASE_PRODUCT_NAME, databaseProductName);
         cfg.put(PersistenceUnitProperties.WEAVING, "false");
         
@@ -157,7 +172,7 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
             @SuppressWarnings("unchecked")
             final List<String> classpathElements = project.getCompileClasspathElements();
             getLog().debug("Classpath URLs: " + StringUtils.collectionToCommaDelimitedString(classpathElements));
-            final List<URL> projectClasspathList = new ArrayList<URL>();
+            final List<URL> projectClasspathList = new ArrayList<>();
             for (String element : classpathElements)
             {
                 try
