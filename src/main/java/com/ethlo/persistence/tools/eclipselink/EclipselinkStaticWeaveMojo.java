@@ -9,9 +9,9 @@ package com.ethlo.persistence.tools.eclipselink;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -52,8 +53,8 @@ import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
 import org.springframework.util.StringUtils;
 import org.w3c.dom.Document;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
 
 /**
  * @author Morten Haraldsen
@@ -116,11 +117,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
             final URL[] classPath = getClassPath();
             getLog().debug("Scanning class-path: " + Arrays.toString(classPath));
 
-            final FastClasspathScanner scanner = new FastClasspathScanner(allBasePackages)
-                .overrideClasspath((Object[]) classPath);
-
-            final ScanResult scanResult = scanner.scan();
-            final Set<String> entityClasses = findEntities(scanResult);
+            final Set<String> entityClasses = findEntities(allBasePackages, classPath);
             getLog().info("Entities found : " + entityClasses.size());
 
             processPersistenceXml(classLoader, entityClasses);
@@ -215,7 +212,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
                 }
             }
         }
-        return files.toArray(new File[files.size()]);
+        return files.toArray(new File[0]);
     }
 
     private URL[] getClassPath()
@@ -227,7 +224,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
             {
                 urls.add(file.toURI().toURL());
             }
-            return urls.toArray(new URL[urls.size()]);
+            return urls.toArray(new URL[0]);
         }
         catch (MalformedURLException exc)
         {
@@ -235,9 +232,23 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         }
     }
 
-    private Set<String> findEntities(ScanResult scanResult)
+    private Set<String> findEntities(String[] allBasePackages, final URL[] classPath)
     {
-        return new TreeSet<>(scanResult.getNamesOfClassesWithAnnotationsAnyOf(Entity.class, MappedSuperclass.class, Embeddable.class, Converter.class));
+        final Set<String> result = new TreeSet<>();
+
+        try (final ScanResult scanResult = new ClassGraph().whitelistPackages(allBasePackages).enableAnnotationInfo().overrideClasspath((Object[]) classPath).scan())
+        {
+            result.addAll(extract(scanResult, Entity.class));
+            result.addAll(extract(scanResult, MappedSuperclass.class));
+            result.addAll(extract(scanResult, Embeddable.class));
+            result.addAll(extract(scanResult, Converter.class));
+        }
+        return result;
+    }
+
+    private Collection<? extends String> extract(final ScanResult scanResult, final Class<?> type)
+    {
+        return scanResult.getClassesWithAnnotation(type.getCanonicalName()).getAsStrings();
     }
 
     private String[] getBasePackages() throws MojoFailureException
@@ -251,13 +262,13 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         if (basePackage != null)
         {
             allBasePackages.add(basePackage);
-        } 
+        }
         else if (basePackages != null)
         {
             if (basePackages.length == 0)
-                {
-                    throw new MojoFailureException("No <basePackage> elements specified within <basePackages>");
-                }
+            {
+                throw new MojoFailureException("No <basePackage> elements specified within <basePackages>");
+            }
             allBasePackages.addAll(Arrays.asList(basePackages));
         }
 
