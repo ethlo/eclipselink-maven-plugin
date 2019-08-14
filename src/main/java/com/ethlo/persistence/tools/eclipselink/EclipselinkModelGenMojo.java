@@ -82,6 +82,9 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     @Parameter(defaultValue="${project.build.directory}/generated-sources/apt")    
     private File generatedSourcesDirectory;
 
+    @Parameter(defaultValue="${project.build.sourceEncoding}")
+    private String encoding;
+
     private boolean verbose = false;
     private boolean noWarn = false;
 
@@ -237,6 +240,11 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         if (this.verbose)
         {
             compilerOpts.put("verbose", null);
+        }
+
+        if (!StringUtils.isEmpty(encoding))
+        {
+            compilerOpts.put("encoding", encoding);
         }
 
         info("Output directory: " + this.generatedSourcesDirectory.getAbsolutePath());
