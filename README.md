@@ -3,6 +3,7 @@ eclipselink-maven-plugin
 [![Maven Central](https://img.shields.io/maven-central/v/com.ethlo.persistence.tools/eclipselink-maven-plugin.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.ethlo.persistence.tools%22%20AND%20a%3A%22eclipselink-maven-plugin%22)
 [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](LICENSE)
 [![Build Status](https://travis-ci.org/ethlo/eclipselink-maven-plugin.svg?branch=master)](https://travis-ci.org/ethlo/eclipselink-maven-plugin)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5a0f641b2f944f4fbf46998fe9d184dc)](https://www.codacy.com/app/morten/eclipselink-maven-plugin?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ethlo/eclipselink-maven-plugin&amp;utm_campaign=Badge_Grade)
 
 Eclipselink JPA maven plugin made to simplify life of the [Eclipselink](http://www.eclipse.org/eclipselink/) JPA developer.
 
