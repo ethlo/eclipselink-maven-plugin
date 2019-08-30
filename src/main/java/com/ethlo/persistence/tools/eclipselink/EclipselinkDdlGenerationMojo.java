@@ -9,9 +9,9 @@ package com.ethlo.persistence.tools.eclipselink;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -68,7 +68,7 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
 
     @Parameter(defaultValue = "file://${project.build.outputDirectory}/ddl.sql")
     private String ddlTargetFile;
-    
+
     @Parameter(defaultValue = "file://${project.build.outputDirectory}/ddl-drop.sql")
     private String ddlDropTargetFile;
 
@@ -77,35 +77,44 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
-    
+
     /**
      * Valid options 'create', 'drop', 'drop-and-create'
      */
     @Parameter(required = false)
     private String action = PersistenceUnitProperties.SCHEMA_GENERATION_DROP_AND_CREATE_ACTION;
 
+    @Parameter(defaultValue = "false", property = "eclipselink.ddl.skip")
+    private boolean skip;
+
     @Override
     public void execute() throws MojoExecutionException
     {
         setLogLevel(logLevel);
-        
-        final Thread thread = Thread.currentThread();
-        final ClassLoader currentClassLoader = thread.getContextClassLoader();
-        try
+        if (this.skip)
         {
-            thread.setContextClassLoader(getClassLoader());
-            generateSchema();
+            getLog().info("Skipping EclipseLink DDL by request");
         }
-        catch (Exception e)
+        else
         {
-            throw new MojoExecutionException(e.getMessage(), e);
+            final Thread thread = Thread.currentThread();
+            final ClassLoader currentClassLoader = thread.getContextClassLoader();
+            try
+            {
+                thread.setContextClassLoader(getClassLoader());
+                generateSchema();
+            }
+            catch (Exception e)
+            {
+                throw new MojoExecutionException(e.getMessage(), e);
+            }
+            finally
+            {
+                thread.setContextClassLoader(currentClassLoader);
+            }
+            
+            getLog().info("Eclipselink DDL completed");
         }
-        finally
-        {
-            thread.setContextClassLoader(currentClassLoader);
-        }
-
-        getLog().info("Eclipselink DDL completed");
     }
 
     public void generateSchema() throws MojoFailureException
@@ -133,10 +142,10 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
     private Map<String, Object> buildCfg()
     {
         final Map<String, Object> cfg = new TreeMap<>();
-        
+
         // No action towards the database
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION, PersistenceUnitProperties.SCHEMA_GENERATION_NONE_ACTION);
-        
+
         // Create scripts
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, action);
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_SOURCE, PersistenceUnitProperties.SCHEMA_GENERATION_METADATA_SOURCE);
@@ -145,17 +154,17 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
         cfg.put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_DROP_TARGET, ddlDropTargetFile);
         cfg.put(PersistenceUnitProperties.SCHEMA_DATABASE_PRODUCT_NAME, databaseProductName);
         cfg.put(PersistenceUnitProperties.WEAVING, "false");
-        
+
         if (databaseMajorVersion != null)
         {
             cfg.put(PersistenceUnitProperties.SCHEMA_DATABASE_MAJOR_VERSION, databaseMajorVersion);
         }
-        
+
         if (databaseMinorVersion != null)
         {
             cfg.put(PersistenceUnitProperties.SCHEMA_DATABASE_MINOR_VERSION, databaseMinorVersion);
         }
-        
+
         return cfg;
     }
 
@@ -198,7 +207,7 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
         if (basePackage == null && basePackages == null)
         {
             throw new MojoFailureException("<basePackage> or <basePackages> elements are mandatory");
-        } 
+        }
         else if (basePackage != null && basePackages != null)
         {
             throw new MojoFailureException("<basePackage> and <basePackages> are mutually exclusive");
