@@ -9,9 +9,9 @@ package com.ethlo.persistence.tools.eclipselink;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -59,43 +59,34 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 /**
  * @author Morten Haraldsen
  */
-@Mojo(requiresDependencyResolution=ResolutionScope.COMPILE, defaultPhase=LifecyclePhase.GENERATE_SOURCES, name="modelgen", requiresProject=true)
+@Mojo(requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.GENERATE_SOURCES, name = "modelgen", requiresProject = true)
 public class EclipselinkModelGenMojo extends AbstractMojo
 {
     public static final String PLUGIN_PREFIX = "JPA modelgen: ";
     public static final String JAVA_FILE_FILTER = "/*.java";
-    public static final String[] ALL_JAVA_FILES_FILTER = new String[] { "**" + JAVA_FILE_FILTER };
-
+    public static final String[] ALL_JAVA_FILES_FILTER = new String[]{"**" + JAVA_FILE_FILTER};
+    // Use Hibernate's model generator as it does not require persistence.xml file to run
+    private final String processor = org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor.class.getName();
+    @Parameter(defaultValue = "${project}", readonly = true, required = true)
+    protected MavenProject project;
     @Component
     private BuildContext buildContext;
-
     /**
      * A list of inclusion package filters for the apt processor.
      * If not specified all sources will be used
      */
     @Parameter
     private Set<String> includes = new HashSet<String>();
-
-    @Parameter(defaultValue="${project.build.sourceDirectory}", required=true)
+    @Parameter(defaultValue = "${project.build.sourceDirectory}", required = true)
     private File source;
-
-    @Parameter(defaultValue="${project.build.directory}/generated-sources/apt")    
+    @Parameter(defaultValue = "${project.build.directory}/generated-sources/apt")
     private File generatedSourcesDirectory;
-
-    @Parameter(defaultValue="${project.build.sourceEncoding}")
+    @Parameter(defaultValue = "${project.build.sourceEncoding}")
     private String encoding;
-
     private boolean verbose = false;
     private boolean noWarn = false;
-
-    @Parameter( defaultValue = "${project}", readonly = true, required=true)
-    protected MavenProject project;
-
-    @Parameter(defaultValue="false", property="eclipselink.modelgen.skip")
+    @Parameter(defaultValue = "false", property = "eclipselink.modelgen.skip")
     private boolean skip;
-
-    // Use Hibernate's model generator as it does not require persistence.xml file to run
-    private final String processor = org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor.class.getName();
 
     private List<File> getCurrentClassPath()
     {
@@ -183,7 +174,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
                 {
                     s.append("\n" + diagnostic);
                 }
-			
+
                 if (!retVal)
                 {
                     throw new MojoExecutionException("Processing failed: " + s.toString());

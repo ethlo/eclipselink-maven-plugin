@@ -107,12 +107,11 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
             catch (Exception e)
             {
                 throw new MojoExecutionException(e.getMessage(), e);
-            }
-            finally
+            } finally
             {
                 thread.setContextClassLoader(currentClassLoader);
             }
-            
+
             getLog().info("Eclipselink DDL completed");
         }
     }
@@ -178,8 +177,7 @@ public class EclipselinkDdlGenerationMojo extends AbstractMojo
     {
         try
         {
-            @SuppressWarnings("unchecked")
-            final List<String> classpathElements = project.getCompileClasspathElements();
+            @SuppressWarnings("unchecked") final List<String> classpathElements = project.getCompileClasspathElements();
             getLog().debug("Classpath URLs: " + StringUtils.collectionToCommaDelimitedString(classpathElements));
             final List<URL> projectClasspathList = new ArrayList<>();
             for (String element : classpathElements)
