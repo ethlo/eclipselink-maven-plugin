@@ -83,6 +83,10 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     private MavenProject project;
+    
+    @Parameter(defaultValue = "true")
+    private boolean addClassesToPersistenceFile;
+
 
     @Override
     public void execute() throws MojoExecutionException
@@ -147,8 +151,10 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         final Document doc = targetFile.exists() ? PersistenceXmlHelper.parseXml(targetFile) : PersistenceXmlHelper.createXml(name);
 
         checkExisting(targetFile, classLoader, doc, entityClasses);
-
-        PersistenceXmlHelper.appendClasses(doc, entityClasses);
+        if(addClassesToPersistenceFile)
+        {
+        	  PersistenceXmlHelper.appendClasses(doc, entityClasses);
+        }
         PersistenceXmlHelper.outputXml(doc, targetFile);
     }
 
