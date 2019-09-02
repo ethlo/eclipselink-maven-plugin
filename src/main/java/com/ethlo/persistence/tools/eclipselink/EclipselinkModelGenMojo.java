@@ -91,6 +91,9 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     @Parameter( defaultValue = "${project}", readonly = true, required=true)
     protected MavenProject project;
 
+    @Parameter(defaultValue="false", property="eclipselink.modelgen.skip")
+    private boolean skip;
+
     // Use Hibernate's model generator as it does not require persistence.xml file to run
     private final String processor = org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor.class.getName();
 
@@ -143,52 +146,55 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException
     {
-        final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        if (compiler == null)
+        if (!this.skip)
         {
-            throw new MojoExecutionException("You need to run build with JDK or have tools.jar on the classpath");
-        }
-
-        try (final StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null))
-        {
-            final Set<File> sourceFiles = getSourceFiles();
-            if (sourceFiles.isEmpty())
+            final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+            if (compiler == null)
             {
-                info("No files to process");
-                return;
+                throw new MojoExecutionException("You need to run build with JDK or have tools.jar on the classpath");
             }
 
-            info("Found " + sourceFiles.size() + " source files for potential processing");
-            debug("Source files: " + Arrays.toString(sourceFiles.toArray()));
-            Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-            final File[] classPathFiles = getClassPathFiles();
+            try (final StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null))
+            {
+                final Set<File> sourceFiles = getSourceFiles();
+                if (sourceFiles.isEmpty())
+                {
+                    info("No files to process");
+                    return;
+                }
 
-            final String compileClassPath = StringUtils.join(classPathFiles, File.pathSeparator);
-            debug("Classpath: " + compileClassPath);
+                info("Found " + sourceFiles.size() + " source files for potential processing");
+                debug("Source files: " + Arrays.toString(sourceFiles.toArray()));
+                Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFiles);
+                final File[] classPathFiles = getClassPathFiles();
 
-            List<String> compilerOptions = buildCompilerOptions(processor, compileClassPath);
+                final String compileClassPath = StringUtils.join(classPathFiles, File.pathSeparator);
+                debug("Classpath: " + compileClassPath);
 
-            project.addCompileSourceRoot(this.generatedSourcesDirectory.getAbsolutePath());
+                List<String> compilerOptions = buildCompilerOptions(processor, compileClassPath);
 
-            final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
-            final CompilationTask task = compiler.getTask(null, fileManager, diagnostics, compilerOptions, null, compilationUnits);
-            final Boolean retVal = task.call();
-            final StringBuilder s = new StringBuilder();
-			for (Diagnostic<?> diagnostic : diagnostics.getDiagnostics())
-			{
-				s.append("\n" + diagnostic);
-			}
+                project.addCompileSourceRoot(this.generatedSourcesDirectory.getAbsolutePath());
+
+                final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+                final CompilationTask task = compiler.getTask(null, fileManager, diagnostics, compilerOptions, null, compilationUnits);
+                final Boolean retVal = task.call();
+                final StringBuilder s = new StringBuilder();
+                for (Diagnostic<?> diagnostic : diagnostics.getDiagnostics())
+                {
+                    s.append("\n" + diagnostic);
+                }
 			
-            if (!retVal)
-            {
-                throw new MojoExecutionException("Processing failed: " + s.toString());
-            }
+                if (!retVal)
+                {
+                    throw new MojoExecutionException("Processing failed: " + s.toString());
+                }
 
-            buildContext.refresh(this.generatedSourcesDirectory);
-        }
-        catch (IOException e)
-        {
-            throw new MojoExecutionException(e.getMessage(), e);
+                buildContext.refresh(this.generatedSourcesDirectory);
+            }
+            catch (IOException e)
+            {
+                throw new MojoExecutionException(e.getMessage(), e);
+            }
         }
     }
 

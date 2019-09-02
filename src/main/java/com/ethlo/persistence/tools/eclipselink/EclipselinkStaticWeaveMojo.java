@@ -88,20 +88,30 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
     private boolean addClassesToPersistenceFile;
 
 
+    @Parameter(defaultValue = "false", property = "eclipselink.weave.skip")
+    private boolean skip;
+    
     @Override
     public void execute() throws MojoExecutionException
     {
         setLogLevel(logLevel);
-        final ClassLoader classLoader = new URLClassLoader(getClassPath(), Thread.currentThread().getContextClassLoader());
-        try
+        if (this.skip)
         {
-            processWeaving(classLoader);
+            getLog().info("Skipping EclipseLink weaving by request");
         }
-        catch (Exception e)
+        else
         {
-            throw new MojoExecutionException(e.getMessage(), e);
+            final ClassLoader classLoader = new URLClassLoader(getClassPath(), Thread.currentThread().getContextClassLoader());
+            try
+            {
+                processWeaving(classLoader);
+            }
+            catch (Exception e)
+            {
+                throw new MojoExecutionException(e.getMessage(), e);
+            }
+            getLog().info("Eclipselink weaving completed");
         }
-        getLog().info("Eclipselink weaving completed");
     }
 
     private void processWeaving(ClassLoader classLoader) throws MojoExecutionException, MojoFailureException
