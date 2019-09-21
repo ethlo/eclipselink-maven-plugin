@@ -21,178 +21,105 @@ package com.ethlo.persistence.tools.eclipselink;
  */
 
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.Writer;
-import java.util.Iterator;
+import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
-import javax.xml.XMLConstants;
-import javax.xml.namespace.NamespaceContext;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
-import org.eclipse.persistence.jpa.jpql.Assert;
-import org.w3c.dom.DOMImplementation;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
-import org.xml.sax.SAXException;
+import org.jcp.persistence.ObjectFactory;
+import org.jcp.persistence.Persistence;
 
 /**
  * @author Morten Haraldsen
  */
 public class PersistenceXmlHelper
 {
-    public static final String JAVA_EE6_PERSISTENCE_NS = "http://java.sun.com/xml/ns/persistence";
-    public static final String JAVA_EE7_PERSISTENCE_NS = "http://xmlns.jcp.org/xml/ns/persistence";
+    private static final ObjectFactory factory = new ObjectFactory();
+    final static JAXBContext jc;
 
-    private static final XPathFactory factory = XPathFactory.newInstance();
-
-    public static Document createXml(String name)
+    static
     {
         try
         {
-            final InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream("empty-persistence.xml");
-            final Document doc = getBuilder().parse(input);
-            final Element puElement = (Element) doc.getElementsByTagName("persistence-unit").item(0);
-            puElement.setAttribute("name", name);
-            return doc;
+            jc = JAXBContext.newInstance(Persistence.class);
         }
-        catch (IOException | SAXException | ParserConfigurationException exc)
+        catch (JAXBException e)
         {
-            throw new RuntimeException(exc.getMessage(), exc);
+            throw new UncheckedIOException(new IOException(e));
         }
     }
 
-    public static void appendClasses(Document doc, Set<String> entityClasses)
+    public static Persistence createXml(String name)
     {
-        final String nsUri = doc.getDocumentElement().getNamespaceURI();
-        Assert.isNotNull(nsUri, "Root element <persistence> should be defined");
-        final boolean isJavaEE6 = nsUri.equals(JAVA_EE6_PERSISTENCE_NS);
-        final boolean isJavaEE7 = nsUri.equals(JAVA_EE7_PERSISTENCE_NS);
-
-        Assert.isTrue(isJavaEE6 || isJavaEE7, "Root <persistence> element should be either " + JAVA_EE6_PERSISTENCE_NS + " or "
-                + JAVA_EE7_PERSISTENCE_NS);
-
-        final String targetNs = isJavaEE6 ? JAVA_EE6_PERSISTENCE_NS : JAVA_EE7_PERSISTENCE_NS;
-
-        final NodeList persistenceUnits = doc.getDocumentElement().getElementsByTagNameNS(targetNs, "persistence-unit");
-        Assert.isNotNull(persistenceUnits, "Could not find a <persistence-unit> element");
-
-        for (int i = 0; i < persistenceUnits.getLength(); i++)
-        {
-            final Node persistenceUnit = persistenceUnits.item(i);
-            for (String entity : entityClasses)
-            {
-                final Element element = doc.createElementNS(targetNs, "class");
-                element.setTextContent(entity);
-                persistenceUnit.appendChild(element);
-            }
-        }
+        final Persistence persistence = factory.createPersistence();
+        final Persistence.PersistenceUnit pu = factory.createPersistencePersistenceUnit();
+        persistence.getPersistenceUnit().add(pu);
+        pu.setName(name);
+        pu.setProvider(org.eclipse.persistence.jpa.PersistenceProvider.class.getCanonicalName());
+        final Persistence.PersistenceUnit.Properties props = factory.createPersistencePersistenceUnitProperties();
+        final Persistence.PersistenceUnit.Properties.Property prop = factory.createPersistencePersistenceUnitPropertiesProperty();
+        prop.setName("eclipselink.weaving");
+        prop.setValue("static");
+        props.getProperty().add(prop);
+        pu.setProperties(props);
+        return persistence;
     }
 
-    public static Document parseXml(File targetFile)
+    public static void appendClasses(Persistence doc, Set<String> entityClasses)
+    {
+        doc.getPersistenceUnit().get(0).getClazz().addAll(entityClasses);
+    }
+
+    public static Persistence parseXml(Path targetFile)
     {
         try
         {
-            return getBuilder().parse(targetFile);
+            final Unmarshaller unmarshaller = jc.createUnmarshaller();
+            return (Persistence) unmarshaller.unmarshal(targetFile.toFile());
         }
-        catch (IOException | SAXException | ParserConfigurationException exc)
+        catch (JAXBException e)
         {
-            throw new RuntimeException(exc.getMessage(), exc);
+            throw new UncheckedIOException("Cannot parse " + targetFile, new IOException(e));
         }
     }
 
-    public static Set<String> getClassesAlreadyDefined(Document doc)
+    public static Set<String> getClassesAlreadyDefined(Persistence doc)
     {
-        final String ns = doc.getDocumentElement().getNamespaceURI();
-        final XPath xpath = factory.newXPath();
-        xpath.setNamespaceContext(new NamespaceContext()
-        {
-            public String getNamespaceURI(String prefix)
-            {
-                if ("ns".equals(prefix))
-                {
-                    return ns;
-                }
-                return XMLConstants.NULL_NS_URI;
-            }
+        return new LinkedHashSet<>(doc.getPersistenceUnit().get(0).getClazz());
+    }
 
-            public String getPrefix(String uri)
-            {
-                throw new UnsupportedOperationException();
-            }
-
-            public Iterator<String> getPrefixes(String uri)
-            {
-                throw new UnsupportedOperationException();
-            }
-        });
-
+    public static void outputXml(Persistence doc, Path targetFile)
+    {
         try
         {
-            final XPathExpression expr = xpath.compile("/ns:persistence/ns:persistence-unit/ns:class");
-            final NodeList res = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
-            final Set<String> existing = new TreeSet<>();
-            for (int i = 0; i < res.getLength(); i++)
-            {
-                final String existingClassName = res.item(i).getTextContent();
-                existing.add(existingClassName);
-            }
-            return existing;
-        }
-        catch (XPathExpressionException e)
-        {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-    }
-
-    private static DocumentBuilder getBuilder() throws ParserConfigurationException
-    {
-        final DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        dbFactory.setNamespaceAware(true);
-        return dbFactory.newDocumentBuilder();
-    }
-
-    public static void outputXml(Document doc, File targetFile)
-    {
-        if (!targetFile.exists())
-        {
-            targetFile.getParentFile().mkdirs();
-        }
-
-        try (final Writer writer = new FileWriter(targetFile))
-        {
-            prettyPrint(doc, writer);
+            Files.createDirectories(targetFile.getParent());
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new UncheckedIOException(e);
         }
+
+        prettyPrint(doc, targetFile);
     }
 
-    public static void prettyPrint(Document document, Writer writer)
+    public static void prettyPrint(Persistence document, Path file)
     {
-        final DOMImplementation domImplementation = document.getImplementation();
-        final DOMImplementationLS domImplementationLS = (DOMImplementationLS) domImplementation.getFeature("LS", "3.0");
-        final LSSerializer lsSerializer = domImplementationLS.createLSSerializer();
-        lsSerializer.getDomConfig().setParameter("format-pretty-print", Boolean.TRUE);
-        final LSOutput lsOutput = domImplementationLS.createLSOutput();
-        lsOutput.setEncoding("UTF-8");
-        lsOutput.setCharacterStream(writer);
-        lsSerializer.write(document, lsOutput);
+        try
+        {
+            final Marshaller marshaller = jc.createMarshaller();
+            marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.marshal(document, file.toFile());
+        }
+        catch (JAXBException e)
+        {
+            throw new UncheckedIOException("Cannot write " + file, new IOException(e));
+        }
     }
 }

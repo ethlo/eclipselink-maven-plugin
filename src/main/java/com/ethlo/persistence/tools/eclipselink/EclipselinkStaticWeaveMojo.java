@@ -27,6 +27,9 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -50,8 +53,9 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.persistence.logging.AbstractSessionLog;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
+import org.jcp.persistence.ObjectFactory;
+import org.jcp.persistence.Persistence;
 import org.springframework.util.StringUtils;
-import org.w3c.dom.Document;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
@@ -154,11 +158,13 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 
     private void processPersistenceXml(ClassLoader classLoader, Set<String> entityClasses)
     {
-        final File targetFile = new File(this.persistenceInfoLocation + "/META-INF/persistence.xml");
+        final ObjectFactory objectFactory = new ObjectFactory();
+        objectFactory.createPersistence();
+        final Path targetFile = Paths.get(this.persistenceInfoLocation.getAbsolutePath(), "/META-INF/persistence.xml");
         getLog().info("persistence.xml location: " + targetFile);
 
         final String name = project.getArtifactId();
-        final Document doc = targetFile.exists() ? PersistenceXmlHelper.parseXml(targetFile) : PersistenceXmlHelper.createXml(name);
+        final Persistence doc = Files.exists(targetFile) ? PersistenceXmlHelper.parseXml(targetFile) : PersistenceXmlHelper.createXml(name);
 
         checkExisting(targetFile, classLoader, doc, entityClasses);
         if (addClassesToPersistenceFile)
@@ -168,9 +174,9 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         PersistenceXmlHelper.outputXml(doc, targetFile);
     }
 
-    private void checkExisting(File targetFile, ClassLoader classLoader, Document doc, Set<String> entityClasses)
+    private void checkExisting(Path targetFile, ClassLoader classLoader, Persistence doc, Set<String> entityClasses)
     {
-        if (targetFile.exists())
+        if (Files.exists(targetFile))
         {
             final Set<String> alreadyDefined = PersistenceXmlHelper.getClassesAlreadyDefined(doc);
 
@@ -264,7 +270,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 
     private Collection<? extends String> extract(final ScanResult scanResult, final Class<?> type)
     {
-        return scanResult.getClassesWithAnnotation(type.getCanonicalName()).getAsStrings();
+        return scanResult.getClassesWithAnnotation(type.getCanonicalName()).getNames();
     }
 
     private String[] getBasePackages() throws MojoFailureException
