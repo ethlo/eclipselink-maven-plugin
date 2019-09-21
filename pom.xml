@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ethlo.persistence.tools</groupId>
     <artifactId>eclipselink-maven-plugin</artifactId>
-    <version>2.7.4</version>
+    <version>2.7.4.1-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Eclipselink Maven Plugin</name>
     <description>Maven Plugin for Eclipselink supporting static weaving, meta-model generation and DDL generation
@@ -114,6 +114,43 @@
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>jaxb2-maven-plugin</artifactId>
+                <version>2.3.1</version>
+                <executions>
+                    <execution>
+                        <id>xjc</id>
+                        <goals>
+                            <goal>xjc</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <laxSchemaValidation>true</laxSchemaValidation>
+                    <sources>
+                        <source>src/main/resources/schema</source>
+                    </sources>
+                    <packageName>org.jcp.persistence</packageName>
+                    <extension>true</extension>
+                    <arguments>
+                        <argument>-Xfluent-api</argument>
+                    </arguments>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.java.dev.jaxb2-commons</groupId>
+                        <artifactId>jaxb-fluent-api</artifactId>
+                        <version>2.1.8</version>
+                        <exclusions>
+                            <exclusion>
+                                <groupId>com.sun.xml</groupId>
+                                <artifactId>jaxb-xjc</artifactId>
+                            </exclusion>
+                        </exclusions>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
