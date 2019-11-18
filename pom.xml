@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ethlo.persistence.tools</groupId>
     <artifactId>eclipselink-maven-plugin</artifactId>
-    <version>2.7.5-SNAPSHOT</version>
+    <version>2.7.5</version>
     <packaging>maven-plugin</packaging>
     <name>Eclipselink Maven Plugin</name>
     <description>Maven Plugin for Eclipselink supporting static weaving, meta-model generation and DDL generation
@@ -76,10 +76,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-            </plugin>
-            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>1.8</source>
@@ -90,7 +86,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.5.2</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>default-descriptor</id>
@@ -112,7 +108,7 @@
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.5</version>
+                <version>1.6.8</version>
                 <extensions>true</extensions>
                 <configuration>
                     <serverId>sonatype-nexus-staging</serverId>
@@ -160,7 +156,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>1.12</version>
+                <version>2.0.0</version>
                 <configuration>
                     <verbose>false</verbose>
                     <addSvnKeyWords>true</addSvnKeyWords>
