@@ -73,6 +73,9 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
     @Parameter
     private String[] basePackages;
 
+    @Parameter(defaultValue = "false")
+    private boolean skipUpdatePersistenceXml;
+
     @Parameter(defaultValue = "${project.build.outputDirectory}", required = true)
     private File source;
 
@@ -138,7 +141,15 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
             final Set<String> entityClasses = findEntities(allBasePackages, classPath);
             getLog().info("Entities found : " + entityClasses.size());
 
-            processPersistenceXml(classLoader, entityClasses);
+            if (! skipUpdatePersistenceXml)
+            {
+                getLog().debug("Updating persistence.xml file");
+                processPersistenceXml(classLoader, entityClasses);
+            }
+            else
+            {
+                getLog().debug("Skipping update of persistence.xml file");
+            }
 
             getLog().info("Source classes dir: " + source);
             getLog().info("Target classes dir: " + target);
