@@ -20,13 +20,13 @@ package com.ethlo.persistence.tools.eclipselink;
  * #L%
  */
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashSet;
+import java.util.Collection;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -92,7 +92,12 @@ public class PersistenceXmlHelper
 
     public static Set<String> getClassesAlreadyDefined(Persistence doc)
     {
-        return new LinkedHashSet<>(doc.getPersistenceUnit().get(0).getClazz());
+
+        return doc.getPersistenceUnit().stream()
+                .map(Persistence.PersistenceUnit::getClazz)
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
+
     }
 
     public static void outputXml(Persistence doc, Path targetFile)
