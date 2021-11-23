@@ -42,7 +42,6 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.MappedSuperclass;
 
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -95,33 +94,6 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 
     @Parameter(defaultValue = "false", property = "eclipselink.weave.skip")
     private boolean skip;
-
-    public static File[] getClassPathFiles(MavenProject project)
-    {
-        final List<File> files = new ArrayList<>();
-        List<?> classpathElements;
-        try
-        {
-            classpathElements = project.getTestClasspathElements();
-        }
-        catch (DependencyResolutionRequiredException e)
-        {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-
-        for (final Object o : classpathElements)
-        {
-            if (o != null)
-            {
-                final File file = new File(o.toString());
-                if (file.canRead())
-                {
-                    files.add(file);
-                }
-            }
-        }
-        return files.toArray(new File[0]);
-    }
 
     @Override
     public void execute() throws MojoExecutionException
@@ -251,7 +223,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         final List<URL> urls = new ArrayList<>();
         try
         {
-            for (File file : getClassPathFiles(project))
+            for (File file : Utils.getClassPathFiles(project))
             {
                 urls.add(file.toURI().toURL());
             }

@@ -42,6 +42,7 @@ import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
 import javax.tools.ToolProvider;
 
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Component;
@@ -104,6 +105,37 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         }
     }
 
+    /**
+     * For some reason this method must be here and cannot use the {@link Utils#getClassPathFiles(MavenProject)} ()}
+     */
+    private File[] getClassPathFiles()
+    {
+        final Set<File> files = new TreeSet<>(getCurrentClassPath());
+        List<?> classpathElements;
+        try
+        {
+            classpathElements = project.getTestClasspathElements();
+        }
+        catch (DependencyResolutionRequiredException e)
+        {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        for (final Object o : classpathElements)
+        {
+            if (o != null)
+            {
+                final File file = new File(o.toString());
+                if (file.canRead())
+                {
+                    files.add(file);
+                }
+            }
+        }
+
+        return files.toArray(new File[0]);
+    }
+
     @Override
     public void execute() throws MojoExecutionException
     {
@@ -127,7 +159,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
                 info("Found " + sourceFiles.size() + " source files for potential processing");
                 debug("Source files: " + Arrays.toString(sourceFiles.toArray()));
                 Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-                final File[] classPathFiles = EclipselinkStaticWeaveMojo.getClassPathFiles(project);
+                final File[] classPathFiles = getClassPathFiles();
 
                 final String compileClassPath = StringUtils.join(classPathFiles, File.pathSeparator);
                 debug("Classpath: " + compileClassPath);
