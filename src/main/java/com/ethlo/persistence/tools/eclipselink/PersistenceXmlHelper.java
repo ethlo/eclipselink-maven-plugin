@@ -41,8 +41,8 @@ import org.jcp.persistence.Persistence;
  */
 public class PersistenceXmlHelper
 {
-    private static final ObjectFactory factory = new ObjectFactory();
     final static JAXBContext jc;
+    private static final ObjectFactory factory = new ObjectFactory();
 
     static
     {

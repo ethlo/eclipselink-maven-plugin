@@ -52,7 +52,6 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.persistence.logging.AbstractSessionLog;
-import org.eclipse.persistence.sessions.Project;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
 import org.jcp.persistence.ObjectFactory;
 import org.jcp.persistence.Persistence;
@@ -96,6 +95,33 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 
     @Parameter(defaultValue = "false", property = "eclipselink.weave.skip")
     private boolean skip;
+
+    public static File[] getClassPathFiles(MavenProject project)
+    {
+        final List<File> files = new ArrayList<>();
+        List<?> classpathElements;
+        try
+        {
+            classpathElements = project.getTestClasspathElements();
+        }
+        catch (DependencyResolutionRequiredException e)
+        {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+
+        for (final Object o : classpathElements)
+        {
+            if (o != null)
+            {
+                final File file = new File(o.toString());
+                if (file.canRead())
+                {
+                    files.add(file);
+                }
+            }
+        }
+        return files.toArray(new File[0]);
+    }
 
     @Override
     public void execute() throws MojoExecutionException
@@ -218,33 +244,6 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
     {
         java.util.logging.Level.parse(logLevel);
         this.logLevel = logLevel.toUpperCase();
-    }
-
-    public static File[] getClassPathFiles(MavenProject project)
-    {
-        final List<File> files = new ArrayList<>();
-        List<?> classpathElements;
-        try
-        {
-            classpathElements = project.getTestClasspathElements();
-        }
-        catch (DependencyResolutionRequiredException e)
-        {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-
-        for (final Object o : classpathElements)
-        {
-            if (o != null)
-            {
-                final File file = new File(o.toString());
-                if (file.canRead())
-                {
-                    files.add(file);
-                }
-            }
-        }
-        return files.toArray(new File[0]);
     }
 
     private URL[] getClassPath()
