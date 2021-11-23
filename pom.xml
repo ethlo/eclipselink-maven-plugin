@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ethlo.persistence.tools</groupId>
     <artifactId>eclipselink-maven-plugin</artifactId>
-    <version>2.7.5.1</version>
+    <version>2.7.9.1-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Eclipselink Maven Plugin</name>
     <description>Maven Plugin for Eclipselink supporting static weaving, meta-model generation and DDL generation
@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.2.0.RELEASE</version>
+        <version>2.5.5</version>
     </parent>
     <url>https://github.com/ethlo/eclipselink-maven-plugin</url>
     <developers>
@@ -229,7 +229,7 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.21</version>
+            <version>4.8.135</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
@@ -275,8 +275,8 @@
         </dependency>
     </dependencies>
     <properties>
-        <maven-version>3.5.4</maven-version>
-        <eclipselink-version>2.7.5</eclipselink-version>
+        <maven-version>3.6.3</maven-version>
+        <eclipselink-version>2.7.9</eclipselink-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.skip>true</gpg.skip>
     </properties>

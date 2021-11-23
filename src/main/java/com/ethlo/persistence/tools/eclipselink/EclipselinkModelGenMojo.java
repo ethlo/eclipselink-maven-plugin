@@ -106,36 +106,8 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         }
     }
 
-    private File[] getClassPathFiles()
-    {
-        final Set<File> files = new TreeSet<>(getCurrentClassPath());
-        List<?> classpathElements;
-        try
-        {
-            classpathElements = project.getTestClasspathElements();
-        }
-        catch (DependencyResolutionRequiredException e)
-        {
-            throw new RuntimeException(e.getMessage(), e);
-        }
-
-        for (final Object o : classpathElements)
-        {
-            if (o != null)
-            {
-                final File file = new File(o.toString());
-                if (file.canRead())
-                {
-                    files.add(file);
-                }
-            }
-        }
-
-        return files.toArray(new File[files.size()]);
-    }
-
     @Override
-    public void execute() throws MojoExecutionException, MojoFailureException
+    public void execute() throws MojoExecutionException
     {
         if (!this.skip)
         {
@@ -157,7 +129,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
                 info("Found " + sourceFiles.size() + " source files for potential processing");
                 debug("Source files: " + Arrays.toString(sourceFiles.toArray()));
                 Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-                final File[] classPathFiles = getClassPathFiles();
+                final File[] classPathFiles = EclipselinkStaticWeaveMojo.getClassPathFiles(project);
 
                 final String compileClassPath = StringUtils.join(classPathFiles, File.pathSeparator);
                 debug("Classpath: " + compileClassPath);
@@ -166,18 +138,18 @@ public class EclipselinkModelGenMojo extends AbstractMojo
 
                 project.addCompileSourceRoot(this.generatedSourcesDirectory.getAbsolutePath());
 
-                final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<JavaFileObject>();
+                final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
                 final CompilationTask task = compiler.getTask(null, fileManager, diagnostics, compilerOptions, null, compilationUnits);
                 final Boolean retVal = task.call();
                 final StringBuilder s = new StringBuilder();
                 for (Diagnostic<?> diagnostic : diagnostics.getDiagnostics())
                 {
-                    s.append("\n" + diagnostic);
+                    s.append("\n").append(diagnostic);
                 }
 
                 if (!retVal)
                 {
-                    throw new MojoExecutionException("Processing failed: " + s.toString());
+                    throw new MojoExecutionException("Processing failed: " + s);
                 }
 
                 buildContext.refresh(this.generatedSourcesDirectory);
@@ -199,14 +171,14 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         String[] filters = ALL_JAVA_FILES_FILTER;
         if (includes != null && !includes.isEmpty())
         {
-            filters = includes.toArray(new String[includes.size()]);
+            filters = includes.toArray(new String[0]);
             for (int i = 0; i < filters.length; i++)
             {
                 filters[i] = filters[i].replace('.', '/') + JAVA_FILE_FILTER;
             }
         }
 
-        Set<File> files = new HashSet<File>();
+        Set<File> files = new HashSet<>();
         final Scanner scanner = buildContext.newScanner(source);
         scanner.setIncludes(filters);
         scanner.scan();
@@ -224,7 +196,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
 
     private List<String> buildCompilerOptions(String processor, String compileClassPath)
     {
-        final Map<String, String> compilerOpts = new LinkedHashMap<String, String>();
+        final Map<String, String> compilerOpts = new LinkedHashMap<>();
         compilerOpts.put("cp", compileClassPath);
         compilerOpts.put("proc:only", null);
         compilerOpts.put("processor", processor);
@@ -260,7 +232,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
             throw new RuntimeException(e.getMessage(), e);
         }
 
-        final List<String> opts = new ArrayList<String>(compilerOpts.size() * 2);
+        final List<String> opts = new ArrayList<>(compilerOpts.size() * 2);
         for (Map.Entry<String, String> compilerOption : compilerOpts.entrySet())
         {
             opts.add("-" + compilerOption.getKey());

@@ -52,6 +52,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.persistence.logging.AbstractSessionLog;
+import org.eclipse.persistence.sessions.Project;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
 import org.jcp.persistence.ObjectFactory;
 import org.jcp.persistence.Persistence;
@@ -66,7 +67,6 @@ import io.github.classgraph.ScanResult;
 @Mojo(requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES, name = "weave", requiresProject = true)
 public class EclipselinkStaticWeaveMojo extends AbstractMojo
 {
-
     @Parameter
     private String basePackage;
 
@@ -143,7 +143,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
             if (updatePersistenceXml)
             {
                 getLog().debug("Updating persistence.xml file");
-                processPersistenceXml(classLoader, entityClasses);
+                processPersistenceXml(entityClasses);
             }
             else
             {
@@ -166,7 +166,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         }
     }
 
-    private void processPersistenceXml(ClassLoader classLoader, Set<String> entityClasses)
+    private void processPersistenceXml(Set<String> entityClasses)
     {
         final ObjectFactory objectFactory = new ObjectFactory();
         objectFactory.createPersistence();
@@ -176,7 +176,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         final String name = project.getArtifactId();
         final Persistence doc = Files.exists(targetFile) ? PersistenceXmlHelper.parseXml(targetFile) : PersistenceXmlHelper.createXml(name);
 
-        checkExisting(targetFile, classLoader, doc, entityClasses);
+        checkExisting(targetFile, doc, entityClasses);
         if (addClassesToPersistenceFile)
         {
             PersistenceXmlHelper.appendClasses(doc, entityClasses);
@@ -184,7 +184,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         PersistenceXmlHelper.outputXml(doc, targetFile);
     }
 
-    private void checkExisting(Path targetFile, ClassLoader classLoader, Persistence doc, Set<String> entityClasses)
+    private void checkExisting(Path targetFile, Persistence doc, Set<String> entityClasses)
     {
         if (Files.exists(targetFile))
         {
@@ -220,7 +220,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         this.logLevel = logLevel.toUpperCase();
     }
 
-    private File[] getClassPathFiles()
+    public static File[] getClassPathFiles(MavenProject project)
     {
         final List<File> files = new ArrayList<>();
         List<?> classpathElements;
@@ -249,10 +249,10 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
 
     private URL[] getClassPath()
     {
-        final List<URL> urls = new ArrayList<URL>();
+        final List<URL> urls = new ArrayList<>();
         try
         {
-            for (File file : getClassPathFiles())
+            for (File file : getClassPathFiles(project))
             {
                 urls.add(file.toURI().toURL());
             }
@@ -268,7 +268,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
     {
         final Set<String> result = new TreeSet<>();
 
-        try (final ScanResult scanResult = new ClassGraph().whitelistPackages(allBasePackages).enableAnnotationInfo().overrideClasspath((Object[]) classPath).scan())
+        try (final ScanResult scanResult = new ClassGraph().acceptPackages(allBasePackages).enableAnnotationInfo().overrideClasspath((Object[]) classPath).scan())
         {
             result.addAll(extract(scanResult, Entity.class));
             result.addAll(extract(scanResult, MappedSuperclass.class));
