@@ -37,10 +37,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import javax.persistence.Converter;
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.Converter;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.MappedSuperclass;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -52,8 +52,8 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.persistence.logging.AbstractSessionLog;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
-import org.jcp.persistence.ObjectFactory;
-import org.jcp.persistence.Persistence;
+import ee.jakarta.persistence.ObjectFactory;
+import ee.jakarta.persistence.Persistence;
 import org.springframework.util.StringUtils;
 
 import io.github.classgraph.ClassGraph;
