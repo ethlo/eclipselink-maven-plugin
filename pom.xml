@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ethlo.persistence.tools</groupId>
     <artifactId>eclipselink-maven-plugin</artifactId>
-    <version>2.7.9.1</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>maven-plugin</packaging>
     <name>Eclipselink Maven Plugin</name>
     <description>Maven Plugin for Eclipselink supporting static weaving, meta-model generation and DDL generation
@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.5.5</version>
+        <version>3.0.4</version>
     </parent>
     <url>https://github.com/ethlo/eclipselink-maven-plugin</url>
     <developers>
@@ -63,8 +63,8 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.1.1</version>
                 <configuration>
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                    <source>8</source>
+<!--                    <additionalparam>-Xdoclint:none</additionalparam>-->
+                    <source>17</source>
                 </configuration>
                 <executions>
                     <execution>
@@ -76,17 +76,17 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
+                    <release>17</release>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>${maven-version}</version>
                 <executions>
                     <execution>
                         <id>default-descriptor</id>
@@ -119,7 +119,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>2.5.0</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>xjc</id>
@@ -133,7 +133,7 @@
                     <sources>
                         <source>src/main/resources/schema</source>
                     </sources>
-                    <packageName>org.jcp.persistence</packageName>
+                    <packageName>ee.jakarta.persistence</packageName>
                     <extension>true</extension>
                     <arguments>
                         <argument>-Xfluent-api</argument>
@@ -220,21 +220,22 @@
         <dependency>
             <groupId>javax.xml.bind</groupId>
             <artifactId>jaxb-api</artifactId>
-            <version>2.3.0</version>
+            <version>2.4.0-b180830.0359</version>
         </dependency>
         <dependency>
-            <groupId>org.hibernate</groupId>
+            <groupId>org.hibernate.orm</groupId>
             <artifactId>hibernate-jpamodelgen</artifactId>
+            <version>6.2.0.CR4</version>
         </dependency>
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.135</version>
+            <version>4.8.157</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-classworlds</artifactId>
-            <version>2.6.0</version>
+            <version>2.7.0</version>
         </dependency>
         <dependency>
             <groupId>org.sonatype.plexus</groupId>
@@ -245,13 +246,13 @@
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-tools-api</artifactId>
             <scope>provided</scope>
-            <version>3.5.2</version>
+            <version>${maven-version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
             <scope>provided</scope>
-            <version>3.5.2</version>
+            <version>${maven-version}</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.persistence</groupId>
@@ -267,16 +268,17 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
+            <version>3.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
             <artifactId>jaxb-runtime</artifactId>
-            <version>2.3.2</version>
+            <version>4.0.2</version>
         </dependency>
     </dependencies>
     <properties>
-        <maven-version>3.6.3</maven-version>
-        <eclipselink-version>2.7.9</eclipselink-version>
+        <maven-version>3.8.1</maven-version>
+        <eclipselink-version>4.0.1</eclipselink-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.skip>true</gpg.skip>
     </properties>
