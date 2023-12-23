@@ -22,6 +22,7 @@ package com.ethlo.persistence.tools.eclipselink;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -64,26 +65,32 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     public static final String PLUGIN_PREFIX = "JPA modelgen: ";
     public static final String JAVA_FILE_FILTER = "/*.java";
     public static final String[] ALL_JAVA_FILES_FILTER = new String[]{"**" + JAVA_FILE_FILTER};
+
     // Use Hibernate's model generator as it does not require persistence.xml file to run
     private final String processor = org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor.class.getName();
+
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     protected MavenProject project;
+
     @Component
     private BuildContext buildContext;
+
     /**
      * A list of inclusion package filters for the apt processor.
      * If not specified all sources will be used
      */
     @Parameter
     private Set<String> includes = new HashSet<String>();
+
     @Parameter(defaultValue = "${project.build.sourceDirectory}", required = true)
     private File source;
+
     @Parameter(defaultValue = "${project.build.directory}/generated-sources/apt")
     private File generatedSourcesDirectory;
+
     @Parameter(defaultValue = "${project.build.sourceEncoding}")
     private String encoding;
-    private boolean verbose = false;
-    private boolean noWarn = false;
+
     @Parameter(defaultValue = "false", property = "eclipselink.modelgen.skip")
     private boolean skip;
 
@@ -133,6 +140,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
             }
         }
 
+        getLog().info("Source roots: " + project.getCompileSourceRoots());
         return files.toArray(new File[0]);
     }
 
@@ -231,16 +239,6 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         compilerOpts.put("proc:only", null);
         compilerOpts.put("processor", processor);
 
-        if (this.noWarn)
-        {
-            compilerOpts.put("nowarn", null);
-        }
-
-        if (this.verbose)
-        {
-            compilerOpts.put("verbose", null);
-        }
-
         if (!StringUtils.isEmpty(encoding))
         {
             compilerOpts.put("encoding", encoding);
@@ -259,7 +257,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e.getMessage(), e);
+            throw new UncheckedIOException(e.getMessage(), e);
         }
 
         final List<String> opts = new ArrayList<>(compilerOpts.size() * 2);
