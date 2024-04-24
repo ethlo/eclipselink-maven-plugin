@@ -11,7 +11,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.5</version>
+        <version>3.2.4</version>
     </parent>
     <url>https://github.com/ethlo/eclipselink-maven-plugin</url>
     <developers>
@@ -229,7 +229,7 @@
         <dependency>
             <groupId>io.github.classgraph</groupId>
             <artifactId>classgraph</artifactId>
-            <version>4.8.157</version>
+            <version>4.8.172</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
@@ -237,9 +237,9 @@
             <version>2.7.0</version>
         </dependency>
         <dependency>
-            <groupId>org.sonatype.plexus</groupId>
+            <groupId>org.codehaus.plexus</groupId>
             <artifactId>plexus-build-api</artifactId>
-            <version>0.0.7</version>
+            <version>1.2.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
@@ -267,7 +267,6 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-jpa</artifactId>
-            <version>3.0.3</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>
@@ -276,7 +275,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <maven-version>3.8.1</maven-version>
+        <maven-version>3.12.0</maven-version>
         <eclipselink-version>4.0.2</eclipselink-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.skip>true</gpg.skip>
