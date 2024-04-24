@@ -277,7 +277,7 @@
     </dependencies>
     <properties>
         <maven-version>3.8.1</maven-version>
-        <eclipselink-version>4.0.1</eclipselink-version>
+        <eclipselink-version>4.0.2</eclipselink-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.skip>true</gpg.skip>
     </properties>
