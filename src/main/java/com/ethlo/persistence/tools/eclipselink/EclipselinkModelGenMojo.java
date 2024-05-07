@@ -193,7 +193,17 @@ public class EclipselinkModelGenMojo extends AbstractMojo
 
     private Set<File> getSourceFiles()
     {
-        if (source == null || !source.exists())
+        final Set<File> fromSource = getFilesFromDirectory(source);
+        final Set<File> fromGenerated = getFilesFromDirectory(generatedSourcesDirectory);
+        final Set<File> all = new TreeSet<>();
+        all.addAll(fromSource);
+        all.addAll(fromGenerated);
+        return all;
+    }
+
+    private Set<File> getFilesFromDirectory(File dir)
+    {
+        if (dir == null || !dir.exists())
         {
             return new TreeSet<>();
         }
@@ -208,12 +218,12 @@ public class EclipselinkModelGenMojo extends AbstractMojo
             }
         }
 
-        Set<File> files = new HashSet<>();
-        final Scanner scanner = buildContext.newScanner(source);
+        final Set<File> files = new HashSet<>();
+        final Scanner scanner = buildContext.newScanner(dir);
         scanner.setIncludes(filters);
         scanner.scan();
 
-        String[] includedFiles = scanner.getIncludedFiles();
+        final String[] includedFiles = scanner.getIncludedFiles();
         if (includedFiles != null)
         {
             for (String includedFile : includedFiles)
