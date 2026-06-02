@@ -45,15 +45,13 @@ import javax.tools.ToolProvider;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.Scanner;
+import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.StringUtils;
-import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * @author Morten Haraldsen
@@ -65,11 +63,10 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     public static final String JAVA_FILE_FILTER = "/*.java";
     public static final String[] ALL_JAVA_FILES_FILTER = new String[]{"**" + JAVA_FILE_FILTER};
     // Use Hibernate's model generator as it does not require persistence.xml file to run
-    private final String processor = org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor.class.getName();
+    private final String processor = org.hibernate.processor.HibernateProcessor.class.getName();
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     protected MavenProject project;
-    @Component
-    private BuildContext buildContext;
+
     /**
      * A list of inclusion package filters for the apt processor.
      * If not specified all sources will be used
@@ -181,8 +178,6 @@ public class EclipselinkModelGenMojo extends AbstractMojo
                 {
                     throw new MojoExecutionException("Processing failed: " + s);
                 }
-
-                buildContext.refresh(this.generatedSourcesDirectory);
             }
             catch (IOException e)
             {
@@ -203,7 +198,8 @@ public class EclipselinkModelGenMojo extends AbstractMojo
 
     private Set<File> getFilesFromDirectory(File dir)
     {
-        if (dir == null || !dir.exists())
+        // Added a quick isDirectory() check as a best practice
+        if (dir == null || !dir.exists() || !dir.isDirectory())
         {
             return new TreeSet<>();
         }
@@ -218,19 +214,22 @@ public class EclipselinkModelGenMojo extends AbstractMojo
             }
         }
 
-        final Set<File> files = new HashSet<>();
-        final Scanner scanner = buildContext.newScanner(dir);
+        DirectoryScanner scanner = new DirectoryScanner();
+        scanner.setBasedir(dir);
         scanner.setIncludes(filters);
         scanner.scan();
 
+        final Set<File> files = new HashSet<>();
         final String[] includedFiles = scanner.getIncludedFiles();
+
         if (includedFiles != null)
         {
             for (String includedFile : includedFiles)
             {
-                files.add(new File(scanner.getBasedir(), includedFile));
+                files.add(new File(dir, includedFile));
             }
         }
+
         return files;
     }
 

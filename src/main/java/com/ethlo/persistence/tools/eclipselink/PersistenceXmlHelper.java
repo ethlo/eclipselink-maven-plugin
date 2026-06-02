@@ -10,7 +10,7 @@ package com.ethlo.persistence.tools.eclipselink;
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -59,22 +59,27 @@ public class PersistenceXmlHelper
     public static Persistence createXml(String name)
     {
         final Persistence persistence = factory.createPersistence();
+
+        persistence.setVersion("3.2");
+
         final Persistence.PersistenceUnit pu = factory.createPersistencePersistenceUnit();
         persistence.getPersistenceUnit().add(pu);
         pu.setName(name);
         pu.setProvider(org.eclipse.persistence.jpa.PersistenceProvider.class.getCanonicalName());
+
         final Persistence.PersistenceUnit.Properties props = factory.createPersistencePersistenceUnitProperties();
         final Persistence.PersistenceUnit.Properties.Property prop = factory.createPersistencePersistenceUnitPropertiesProperty();
         prop.setName("eclipselink.weaving");
         prop.setValue("static");
         props.getProperty().add(prop);
         pu.setProperties(props);
+
         return persistence;
     }
 
     public static void appendClasses(Persistence doc, Set<String> entityClasses)
     {
-        doc.getPersistenceUnit().get(0).getClazz().addAll(entityClasses);
+        doc.getPersistenceUnit().getFirst().getClazz().addAll(entityClasses);
     }
 
     public static Persistence parseXml(Path targetFile)
@@ -92,12 +97,10 @@ public class PersistenceXmlHelper
 
     public static Set<String> getClassesAlreadyDefined(Persistence doc)
     {
-
         return doc.getPersistenceUnit().stream()
                 .map(Persistence.PersistenceUnit::getClazz)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toSet());
-
     }
 
     public static void outputXml(Persistence doc, Path targetFile)
@@ -114,12 +117,14 @@ public class PersistenceXmlHelper
         prettyPrint(doc, targetFile);
     }
 
-    public static void prettyPrint(Persistence document, Path file)
+    private static void prettyPrint(Persistence document, Path file)
     {
         try
         {
             final Marshaller marshaller = jc.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
+                    "https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd");
             marshaller.marshal(document, file.toFile());
         }
         catch (JAXBException e)
