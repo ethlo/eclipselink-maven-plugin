@@ -184,8 +184,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
                 final String compileClassPath = StringUtils.join(classPathFiles, File.pathSeparator);
                 debug("Classpath: " + compileClassPath);
 
-                final String processor = "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor";
-                List<String> compilerOptions = buildCompilerOptions(compileClassPath);
+                final List<String> compilerOptions = buildCompilerOptions(compileClassPath);
 
                 project.addCompileSourceRoot(this.generatedSourcesDirectory.getAbsolutePath());
 
