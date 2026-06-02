@@ -123,6 +123,7 @@ public class PersistenceXmlHelper
         {
             final Marshaller marshaller = jc.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+            document.setVersion("3.2");
             marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION,
                     "https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd");
             marshaller.marshal(document, file.toFile());
