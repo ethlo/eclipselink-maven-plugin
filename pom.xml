@@ -8,11 +8,6 @@
     <name>Eclipselink Maven Plugin</name>
     <description>Maven Plugin for Eclipselink supporting static weaving, meta-model generation and DDL generation
     </description>
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>4.0.6</version>
-    </parent>
     <url>https://github.com/ethlo/eclipselink-maven-plugin</url>
     <developers>
         <developer>
@@ -248,10 +243,6 @@
             <groupId>org.eclipse.persistence</groupId>
             <artifactId>org.eclipse.persistence.jpa</artifactId>
             <version>${eclipselink-version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jaxb</groupId>

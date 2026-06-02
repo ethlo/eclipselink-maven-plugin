@@ -47,7 +47,6 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.persistence.logging.AbstractSessionLog;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
-import org.springframework.util.StringUtils;
 
 import ee.jakarta.persistence.ObjectFactory;
 import ee.jakarta.persistence.Persistence;
@@ -128,7 +127,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
             String[] allBasePackages = this.getBasePackages();
             if (allBasePackages.length > 0)
             {
-                getLog().info("Only entities from base packages '" + StringUtils.arrayToDelimitedString(allBasePackages, ", ") + "' will be included in persistence.xml");
+                getLog().info("Only entities from base packages '" + String.join(", ", allBasePackages) + "' will be included in persistence.xml");
             }
             final URL[] classPath = getClassPath();
             getLog().debug("Scanning class-path: " + Arrays.toString(classPath));
@@ -273,7 +272,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
             allBasePackages.addAll(Arrays.asList(basePackages));
         }
 
-        return StringUtils.toStringArray(allBasePackages);
+        return allBasePackages.toArray(new String[0]);
     }
 
 }
