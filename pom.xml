@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.ethlo.persistence.tools</groupId>
     <artifactId>eclipselink-maven-plugin</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
     <packaging>maven-plugin</packaging>
     <name>Eclipselink Maven Plugin</name>
     <description>Maven Plugin for Eclipselink supporting static weaving, meta-model generation and DDL generation
@@ -27,6 +27,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -55,6 +56,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
                 <configuration>
                     <release>21</release>
                     <encoding>UTF-8</encoding>
@@ -63,7 +65,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-plugin-plugin</artifactId>
-                <version>${maven-version}</version>
+                <version>3.15.2</version>
                 <executions>
                     <execution>
                         <id>default-descriptor</id>
@@ -81,6 +83,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
+                <version>2.21.0</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -232,14 +235,14 @@
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-tools-api</artifactId>
+            <version>3.15.2</version>
             <scope>provided</scope>
-            <version>${maven-version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.maven.plugin-tools</groupId>
             <artifactId>maven-plugin-annotations</artifactId>
             <scope>provided</scope>
-            <version>${maven-version}</version>
+            <version>3.15.2</version>
         </dependency>
         <dependency>
             <groupId>org.codehaus.plexus</groupId>
@@ -258,7 +261,6 @@
         </dependency>
     </dependencies>
     <properties>
-        <maven-version>3.15.2</maven-version>
         <eclipselink-version>5.0.0</eclipselink-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <gpg.skip>true</gpg.skip>
