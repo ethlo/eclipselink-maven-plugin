@@ -10,7 +10,7 @@ package com.ethlo.persistence.tools.eclipselink;
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -53,6 +54,8 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.StringUtils;
 
+import ee.jakarta.persistence.Persistence;
+
 /**
  * @author Morten Haraldsen
  */
@@ -62,8 +65,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     public static final String PLUGIN_PREFIX = "JPA modelgen: ";
     public static final String JAVA_FILE_FILTER = "/*.java";
     public static final String[] ALL_JAVA_FILES_FILTER = new String[]{"**" + JAVA_FILE_FILTER};
-    // Use Hibernate's model generator as it does not require persistence.xml file to run
-    private final String processor = org.hibernate.processor.HibernateProcessor.class.getName();
+
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     protected MavenProject project;
 
@@ -72,15 +74,17 @@ public class EclipselinkModelGenMojo extends AbstractMojo
      * If not specified all sources will be used
      */
     @Parameter
-    private Set<String> includes = new HashSet<String>();
+    private Set<String> includes = new LinkedHashSet<>();
+
     @Parameter(defaultValue = "${project.build.sourceDirectory}", required = true)
     private File source;
+
     @Parameter(defaultValue = "${project.build.directory}/generated-sources/apt")
     private File generatedSourcesDirectory;
+
     @Parameter(defaultValue = "${project.build.sourceEncoding}")
     private String encoding;
-    private boolean verbose = false;
-    private boolean noWarn = false;
+
     @Parameter(defaultValue = "false", property = "eclipselink.modelgen.skip")
     private boolean skip;
 
@@ -105,9 +109,16 @@ public class EclipselinkModelGenMojo extends AbstractMojo
     /**
      * For some reason this method must be here and cannot use the {@link Utils#getClassPathFiles(MavenProject)} ()}
      */
-    private File[] getClassPathFiles()
+    private File[] getClassPathFiles(File extraClasspathDir)
     {
-        final Set<File> files = new TreeSet<>(getCurrentClassPath());
+        final Set<File> files = new LinkedHashSet<>(getCurrentClassPath());
+
+        // Inject our isolated directory containing the dummy persistence.xml
+        if (extraClasspathDir != null)
+        {
+            files.add(extraClasspathDir);
+        }
+
         List<?> classpathElements;
         try
         {
@@ -153,15 +164,28 @@ public class EclipselinkModelGenMojo extends AbstractMojo
                     return;
                 }
 
+                // Generate an isolated dummy persistence.xml to satisfy EclipseLink
+                final File modelgenMetaDir = new File(project.getBuild().getDirectory(), "modelgen-meta");
+                final File dummyXml = new File(modelgenMetaDir, "META-INF/eclipselink-modelgen.xml");
+                if (!dummyXml.exists())
+                {
+                    debug("Generating isolated persistence.xml for CanonicalModelProcessor");
+                    Persistence doc = PersistenceXmlHelper.createXml("modelgen-pu");
+                    PersistenceXmlHelper.outputXml(doc, dummyXml.toPath());
+                }
+
                 info("Found " + sourceFiles.size() + " source files for potential processing");
                 debug("Source files: " + Arrays.toString(sourceFiles.toArray()));
                 Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourceFiles);
-                final File[] classPathFiles = getClassPathFiles();
+
+                // Pass the directory containing the dummy XML to the classpath
+                final File[] classPathFiles = getClassPathFiles(modelgenMetaDir);
 
                 final String compileClassPath = StringUtils.join(classPathFiles, File.pathSeparator);
                 debug("Classpath: " + compileClassPath);
 
-                List<String> compilerOptions = buildCompilerOptions(processor, compileClassPath);
+                final String processor = "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor";
+                List<String> compilerOptions = buildCompilerOptions(compileClassPath);
 
                 project.addCompileSourceRoot(this.generatedSourcesDirectory.getAbsolutePath());
 
@@ -198,7 +222,6 @@ public class EclipselinkModelGenMojo extends AbstractMojo
 
     private Set<File> getFilesFromDirectory(File dir)
     {
-        // Added a quick isDirectory() check as a best practice
         if (dir == null || !dir.exists() || !dir.isDirectory())
         {
             return new TreeSet<>();
@@ -214,7 +237,7 @@ public class EclipselinkModelGenMojo extends AbstractMojo
             }
         }
 
-        DirectoryScanner scanner = new DirectoryScanner();
+        final DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(dir);
         scanner.setIncludes(filters);
         scanner.scan();
@@ -233,22 +256,13 @@ public class EclipselinkModelGenMojo extends AbstractMojo
         return files;
     }
 
-    private List<String> buildCompilerOptions(String processor, String compileClassPath)
+    private List<String> buildCompilerOptions(String compileClassPath)
     {
         final Map<String, String> compilerOpts = new LinkedHashMap<>();
         compilerOpts.put("cp", compileClassPath);
         compilerOpts.put("proc:only", null);
-        compilerOpts.put("processor", processor);
-
-        if (this.noWarn)
-        {
-            compilerOpts.put("nowarn", null);
-        }
-
-        if (this.verbose)
-        {
-            compilerOpts.put("verbose", null);
-        }
+        compilerOpts.put("processor", "org.eclipse.persistence.internal.jpa.modelgen.CanonicalModelProcessor");
+        compilerOpts.put("Aeclipselink.persistencexml=META-INF/eclipselink-modelgen.xml", null);
 
         if (!StringUtils.isEmpty(encoding))
         {
