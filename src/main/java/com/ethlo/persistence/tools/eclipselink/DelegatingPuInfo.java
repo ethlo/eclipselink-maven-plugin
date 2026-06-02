@@ -1,16 +1,18 @@
 package com.ethlo.persistence.tools.eclipselink;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import jakarta.persistence.SharedCacheMode;
 import jakarta.persistence.ValidationMode;
 import jakarta.persistence.spi.ClassTransformer;
 import jakarta.persistence.spi.PersistenceUnitInfo;
 import jakarta.persistence.spi.PersistenceUnitTransactionType;
-import javax.sql.DataSource;
 
 /*-
  * #%L
@@ -51,6 +53,19 @@ public class DelegatingPuInfo implements PersistenceUnitInfo
         return delegate.getPersistenceProviderClassName();
     }
 
+    @Override
+    public String getScopeAnnotationName()
+    {
+        return delegate.getScopeAnnotationName();
+    }
+
+    @Override
+    public List<String> getQualifierAnnotationNames()
+    {
+        return delegate.getQualifierAnnotationNames();
+    }
+
+    @SuppressWarnings("removal")
     public PersistenceUnitTransactionType getTransactionType()
     {
         return delegate.getTransactionType();
@@ -80,7 +95,7 @@ public class DelegatingPuInfo implements PersistenceUnitInfo
     {
         try
         {
-            return new URL("http://foo.bar");
+            return URI.create("https://example.com").toURL();
         }
         catch (MalformedURLException exc)
         {

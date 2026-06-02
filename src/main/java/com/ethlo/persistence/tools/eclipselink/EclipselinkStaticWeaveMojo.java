@@ -37,11 +37,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-import jakarta.persistence.Converter;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.Entity;
-import jakarta.persistence.MappedSuperclass;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -52,17 +47,20 @@ import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
 import org.eclipse.persistence.logging.AbstractSessionLog;
 import org.eclipse.persistence.tools.weaving.jpa.StaticWeaveProcessor;
+
 import ee.jakarta.persistence.ObjectFactory;
 import ee.jakarta.persistence.Persistence;
-import org.springframework.util.StringUtils;
-
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
+import jakarta.persistence.Converter;
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Entity;
+import jakarta.persistence.MappedSuperclass;
 
 /**
  * @author Morten Haraldsen
  */
-@Mojo(requiresDependencyResolution = ResolutionScope.COMPILE, defaultPhase = LifecyclePhase.PROCESS_CLASSES, name = "weave", requiresProject = true)
+@Mojo(requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES, name = "weave", requiresProject = true)
 public class EclipselinkStaticWeaveMojo extends AbstractMojo
 {
     @Parameter
@@ -105,8 +103,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
         }
         else
         {
-            final ClassLoader classLoader = new URLClassLoader(getClassPath(), Thread.currentThread().getContextClassLoader());
-            try
+            try (final URLClassLoader classLoader = new URLClassLoader(getClassPath(), Thread.currentThread().getContextClassLoader()))
             {
                 processWeaving(classLoader);
             }
@@ -130,7 +127,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
             String[] allBasePackages = this.getBasePackages();
             if (allBasePackages.length > 0)
             {
-                getLog().info("Only entities from base packages '" + StringUtils.arrayToDelimitedString(allBasePackages, ", ") + "' will be included in persistence.xml");
+                getLog().info("Only entities from base packages '" + String.join(", ", allBasePackages) + "' will be included in persistence.xml");
             }
             final URL[] classPath = getClassPath();
             getLog().debug("Scanning class-path: " + Arrays.toString(classPath));
@@ -275,7 +272,7 @@ public class EclipselinkStaticWeaveMojo extends AbstractMojo
             allBasePackages.addAll(Arrays.asList(basePackages));
         }
 
-        return StringUtils.toStringArray(allBasePackages);
+        return allBasePackages.toArray(new String[0]);
     }
 
 }
