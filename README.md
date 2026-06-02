@@ -1,28 +1,36 @@
-eclipselink-maven-plugin
-=========================
+# EclipseLink Maven Plugin
+
 [![Maven Central](https://img.shields.io/maven-central/v/com.ethlo.persistence.tools/eclipselink-maven-plugin.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.ethlo.persistence.tools%22%20AND%20a%3A%22eclipselink-maven-plugin%22)
 [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](LICENSE)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/5a0f641b2f944f4fbf46998fe9d184dc)](https://www.codacy.com/app/morten/eclipselink-maven-plugin?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ethlo/eclipselink-maven-plugin&amp;utm_campaign=Badge_Grade)
 
-Eclipselink JPA maven plugin made to simplify life of the [Eclipselink](http://www.eclipse.org/eclipselink/) JPA developer.
+The EclipseLink Maven Plugin is designed to streamline the workflow for [EclipseLink](http://www.eclipse.org/eclipselink/) JPA developers by automating essential configuration and generation tasks.
 
 ## Features
-* No need to setup special APT processor for canonical model generation, just use goal ```modelgen```.
-* Allows you to get rid of the ```persistence.xml``` file as the classes are detected automatically and a persistence.xml file is generated. 
-* If the ```persistence.xml``` file already exists, missing ```<class>...</class>``` entries are added automatically. This allows you to have a basic configuration, but you do not have to manually add class entries.
 
-## Versions
-* 3.x releases uses the jakarta.* packages
-* 2.x releases uses the javax.* packages
+* **Automated Meta-Model Generation:** Eliminates the need to configure a dedicated APT processor for canonical model generation. Simply execute the `modelgen` goal.
+* **Dynamic `persistence.xml` Generation:** Allows you to bypass the `persistence.xml` file entirely. Entity classes are detected automatically, and the required persistence file is generated during the build process.
+* **Automatic Class Registration:** If a `persistence.xml` file already exists, any missing `<class>...</class>` entries are appended automatically. This enables a minimal baseline configuration without the maintenance overhead of manual class registration.
+
+## Compatibility
+
+* **4.x Releases:** Target the `jakarta.*` namespace and Eclipselink 5.x.
+* **3.x Releases:** Target the `jakarta.*` namespace.
+* **2.x Releases:** Target the `javax.*` namespace.
 
 ## Usage
 
-Static weaving:
+### Static Weaving
+
 ```xml
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
 	<version>${eclipselink-maven-plugin.version}</version>
+	<configuration>
+		<basePackages>
+			<basePackage>com.yourcompany.project</basePackage>
+		</basePackages>
+	</configuration>
 	<executions>
 		<execution>
 			<phase>process-classes</phase>
@@ -32,14 +40,21 @@ Static weaving:
 		</execution>
 	</executions>
 </plugin>
+
 ```
 
-Meta-model generation:
+### Meta-Model Generation
+
 ```xml
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
 	<version>${eclipselink-maven-plugin.version}</version>
+	<configuration>
+		<basePackages>
+			<basePackage>com.yourcompany.project</basePackage>
+		</basePackages>
+	</configuration>
 	<executions>
 		<execution>
 			<phase>generate-sources</phase>
@@ -49,14 +64,22 @@ Meta-model generation:
 		</execution>
 	</executions>
 </plugin>
+
 ```
 
-Both weave, DDL and meta-model generation and setting `basePackages`:
+### Combined: Weaving, DDL, and Meta-Model Generation
+
 ```xml
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
 	<version>${eclipselink-maven-plugin.version}</version>
+	<configuration>
+		<basePackages>
+			<basePackage>org.my.projectA</basePackage>
+			<basePackage>org.my.projectB</basePackage>
+		</basePackages>
+	</configuration>
 	<executions>
 		<execution>
 			<id>weave</id>
@@ -83,11 +106,6 @@ Both weave, DDL and meta-model generation and setting `basePackages`:
 			</goals>
 		</execution>
 	</executions>
-	<configuration>
-		<basePackages>
-			<basePackage>org.my.projectA</basePackage>
-			<basePackage>org.my.projectB</basePackage>
-		</basePackages>
-	</configuration>
 </plugin>
+
 ```
