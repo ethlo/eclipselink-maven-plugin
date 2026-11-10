@@ -1,7 +1,7 @@
 # EclipseLink Maven Plugin
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.ethlo.persistence.tools/eclipselink-maven-plugin.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22com.ethlo.persistence.tools%22%20AND%20a%3A%22eclipselink-maven-plugin%22)
-[![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](LICENSE)
+[![License](https://img.shields.io/github/license/ethlo/eclipselink-maven-plugin)](LICENSE)
 
 The EclipseLink Maven Plugin is designed to streamline the workflow for [EclipseLink](http://www.eclipse.org/eclipselink/) JPA developers by automating essential configuration and generation tasks.
 
