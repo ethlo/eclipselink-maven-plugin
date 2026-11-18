@@ -163,7 +163,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>3.2.3</version>
+                <version>3.2.7</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -197,18 +197,6 @@
         <connection>scm:git:git@github.com:ethlo/eclipselink-maven-plugin.git</connection>
         <developerConnection>scm:git:git@github.com:ethlo/eclipselink-maven-plugin.git</developerConnection>
     </scm>
-    <distributionManagement>
-        <repository>
-            <id>sonatype-nexus-staging</id>
-            <name>Nexus Release Repository</name>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-        <snapshotRepository>
-            <id>sonatype-nexus-snapshots</id>
-            <name>Nexus Snapshot repository</name>
-            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-        </snapshotRepository>
-    </distributionManagement>
     <dependencies>
         <dependency>
             <groupId>javax.xml.bind</groupId>
@@ -272,4 +260,13 @@
         <!-- Disable the default deploy plugin so the central-publishing-maven-plugin can take over -->
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
+    <profiles>
+        <!-- mvn -Prelease deploy: signs and publishes to Maven Central via the Central Portal -->
+        <profile>
+            <id>release</id>
+            <properties>
+                <gpg.skip>false</gpg.skip>
+            </properties>
+        </profile>
+    </profiles>
 </project>
