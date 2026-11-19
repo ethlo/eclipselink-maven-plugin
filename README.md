@@ -25,7 +25,7 @@ The EclipseLink Maven Plugin is designed to streamline the workflow for [Eclipse
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>${eclipselink-maven-plugin.version}</version>
+	<version>4.0.2</version>
 	<configuration>
 		<basePackages>
 			<basePackage>com.yourcompany.project</basePackage>
@@ -49,7 +49,7 @@ The EclipseLink Maven Plugin is designed to streamline the workflow for [Eclipse
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>${eclipselink-maven-plugin.version}</version>
+	<version>4.0.2</version>
 	<configuration>
 		<basePackages>
 			<basePackage>com.yourcompany.project</basePackage>
@@ -73,7 +73,7 @@ The EclipseLink Maven Plugin is designed to streamline the workflow for [Eclipse
 <plugin>
 	<groupId>com.ethlo.persistence.tools</groupId>
 	<artifactId>eclipselink-maven-plugin</artifactId>
-	<version>${eclipselink-maven-plugin.version}</version>
+	<version>4.0.2</version>
 	<configuration>
 		<basePackages>
 			<basePackage>org.my.projectA</basePackage>

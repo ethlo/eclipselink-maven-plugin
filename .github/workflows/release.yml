@@ -58,3 +58,47 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.CENTRAL_PASSWORD }}
           MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         run: mvn -ntp -B -Prelease clean deploy
+
+  update-readme:
+    name: Update README to the released version
+    needs: publish
+    runs-on: ubuntu-26.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Decide whether to update
+        id: decide
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          VERSION="${TAG#v}"
+          CURRENT=$(perl -0ne 'print "$1\n" while m#<groupId>com\.ethlo\.persistence\.tools</groupId>\s*<artifactId>[^<]+</artifactId>\s*<version>([^<]+)</version>#g' README.md | head -1)
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if [[ -z "$CURRENT" ]]; then
+            echo "No com.ethlo.persistence.tools dependency snippet in README.md, nothing to update"
+          elif [[ "$VERSION" == *-* ]]; then
+            echo "Pre-release $VERSION, README stays on $CURRENT"
+          elif [[ "$(printf '%s\n%s\n' "$CURRENT" "$VERSION" | sort -V | tail -1)" != "$VERSION" ]]; then
+            echo "$VERSION is older than $CURRENT, README stays on $CURRENT"
+          else
+            echo "update=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Update README and push
+        if: steps.decide.outputs.update == 'true'
+        env:
+          VERSION: ${{ steps.decide.outputs.version }}
+        run: |
+          perl -0pi -e 's#(<groupId>com\.ethlo\.persistence\.tools</groupId>\s*<artifactId>[^<]+</artifactId>\s*<version>)[^<]+(</version>)#${1}'"$VERSION"'${2}#g' README.md
+          git config user.name "github-actions[bot]"
+          git config user.email "41898898+github-actions[bot]@users.noreply.github.com"
+          git add README.md
+          if git diff --cached --quiet; then
+            echo "README already shows $VERSION"
+            exit 0
+          fi
+          git commit -m "Update README to $VERSION"
+          git push origin HEAD:${{ github.event.repository.default_branch }}
